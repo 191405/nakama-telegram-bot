@@ -1,0 +1,32 @@
+# fly.toml app configuration file for Nakama Network Telegram Bot
+# Documentation: https://fly.io/docs/reference/configuration/
+
+app = "nakama-network-bot"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[mounts]
+  source = "nakama_data"
+  destination = "/data"
+  initial_size = "1gb"
+
+[env]
+  DATABASE_URL = "sqlite+aiosqlite:////data/filebot.db"
+  AUTO_DELETE_MINUTES = "10"
+  RATE_LIMIT = "30"
+  PAGE_SIZE = "8"
+
+# Telegram bot uses outbound long-polling (no inbound HTTP webhooks).
+# Omitting [http_service] ensures Fly Machines run as a 24/7 background worker
+# and will never auto-stop due to idle HTTP traffic.
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+[[restart]]
+  policy = "always"
+
+
