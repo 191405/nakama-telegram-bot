@@ -1,592 +1,811 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nakama Network | Anime & Donghua Vault</title>
-  <meta name="description" content="High-performance media vault and streaming platform powered by decentralized storage.">
-  
-  <!-- Fonts -->
+  <title>Nakama Network</title>
+  <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            pahe: {
-              base: '#0B0D13',
-              surface: '#121620',
-              card: '#161C2A',
-              border: 'rgba(255, 255, 255, 0.08)',
-              borderActive: '#FF2A4B',
-              crimson: '#FF2A4B',
-              crimsonHover: '#D3081E',
-              cyan: '#00F0FF',
-              textPrimary: '#FFFFFF',
-              textSecondary: '#94A3B8',
-              textMuted: '#64748B',
-            }
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          }
-        }
-      }
-    }
-  </script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
+    /* ───── Reset ───── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+    img { display: block; max-width: 100%; }
+    input { font: inherit; }
+
+    /* ───── Theme: Midnight (Default) ───── */
+    :root, [data-theme="midnight"] {
+      --bg-page: #08090E;
+      --bg-surface: #0F1119;
+      --bg-card: #151822;
+      --bg-card-hover: #1B1F2C;
+      --bg-input: #12141E;
+      --border: rgba(255,255,255,0.07);
+      --border-active: #6366F1;
+      --accent: #818CF8;
+      --accent-hover: #6366F1;
+      --accent-subtle: rgba(99,102,241,0.12);
+      --text-1: #F1F5F9;
+      --text-2: #94A3B8;
+      --text-3: #475569;
+      --badge-ongoing: #22C55E;
+      --badge-completed: #6366F1;
+      --danger: #EF4444;
+      --shadow-card: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    /* ───── Theme: Crimson ───── */
+    [data-theme="crimson"] {
+      --bg-page: #0A0708;
+      --bg-surface: #140E10;
+      --bg-card: #1C1316;
+      --bg-card-hover: #24181C;
+      --bg-input: #140E10;
+      --border: rgba(255,255,255,0.06);
+      --border-active: #E11D48;
+      --accent: #FB7185;
+      --accent-hover: #E11D48;
+      --accent-subtle: rgba(225,29,72,0.12);
+      --text-1: #FFF1F2;
+      --text-2: #FDA4AF;
+      --text-3: #9F1239;
+      --badge-ongoing: #FB923C;
+      --badge-completed: #E11D48;
+      --danger: #EF4444;
+      --shadow-card: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    /* ───── Theme: Ocean ───── */
+    [data-theme="ocean"] {
+      --bg-page: #060A0E;
+      --bg-surface: #0B1219;
+      --bg-card: #101A24;
+      --bg-card-hover: #15222F;
+      --bg-input: #0B1219;
+      --border: rgba(255,255,255,0.06);
+      --border-active: #0891B2;
+      --accent: #22D3EE;
+      --accent-hover: #0891B2;
+      --accent-subtle: rgba(8,145,178,0.12);
+      --text-1: #F0FDFA;
+      --text-2: #67E8F9;
+      --text-3: #155E75;
+      --badge-ongoing: #34D399;
+      --badge-completed: #0891B2;
+      --danger: #F87171;
+      --shadow-card: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
     body {
-      background-color: #0B0D13;
-      color: #FFFFFF;
-      font-family: 'Inter', sans-serif;
+      background: var(--bg-page);
+      color: var(--text-1);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+
+    /* ───── Utilities ───── */
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+    /* ───── Layout ───── */
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
+    @media (min-width: 768px) { .container { padding: 0 32px; } }
+
+    /* ───── Navigation ───── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8,9,14,0.88);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      height: 60px;
     }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #0B0D13;
+    .nav-inner {
+      max-width: 1280px; margin: 0 auto; padding: 0 20px;
+      height: 100%; display: flex; align-items: center; gap: 16px;
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #1E293B;
-      border-radius: 3px;
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #334155;
+    .nav-brand svg { width: 32px; height: 32px; }
+    .nav-brand-text { display: flex; flex-direction: column; }
+    .nav-brand-name { font-size: 15px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-1); line-height: 1.1; }
+    .nav-brand-sub { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); line-height: 1; }
+
+    .nav-search {
+      flex: 1; max-width: 420px; position: relative;
     }
-    .glass-nav {
-      background: rgba(11, 13, 19, 0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    .nav-search input {
+      width: 100%; padding: 8px 12px 8px 36px;
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-1); font-size: 13px;
+      transition: border-color 0.15s;
+      outline: none;
     }
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+    .nav-search input::placeholder { color: var(--text-3); }
+    .nav-search input:focus { border-color: var(--accent); }
+    .nav-search-icon {
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; color: var(--text-3); pointer-events: none;
     }
+
+    .nav-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+    .theme-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-2); transition: all 0.15s;
+    }
+    .theme-btn:hover { background: var(--bg-card-hover); color: var(--text-1); }
+    .theme-btn.active { border-color: var(--accent); color: var(--accent); }
+
+    .nav-link {
+      padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      color: var(--text-2); background: var(--bg-card); border: 1px solid var(--border);
+      transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .nav-link:hover { color: var(--text-1); border-color: var(--text-3); }
+
+    /* ───── Page Sections ───── */
+    .page { display: none; flex: 1; }
+    .page.active { display: block; }
+
+    /* ───── Section Headers ───── */
+    .section-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 16px; padding-top: 32px;
+    }
+    .section-title { font-size: 16px; font-weight: 700; color: var(--text-1); }
+    .section-link {
+      font-size: 12px; font-weight: 600; color: var(--accent);
+      cursor: pointer; transition: opacity 0.15s;
+    }
+    .section-link:hover { opacity: 0.8; }
+
+    /* ───── Poster Grid ───── */
+    .poster-grid {
+      display: grid; gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    }
+    @media (min-width: 640px) { .poster-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); } }
+    @media (min-width: 1024px) { .poster-grid { grid-template-columns: repeat(6, 1fr); } }
+
+    .poster-card {
+      border-radius: 10px; overflow: hidden; cursor: pointer;
+      background: var(--bg-card); border: 1px solid var(--border);
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .poster-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-active);
+      box-shadow: var(--shadow-card);
+    }
+    .poster-card-image {
+      aspect-ratio: 2/3; background: var(--bg-surface);
+      position: relative; overflow: hidden;
+    }
+    .poster-card-image img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .poster-card:hover .poster-card-image img { transform: scale(1.05); }
+    .poster-card-image .gradient-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, var(--bg-card), transparent 50%);
+    }
+    .poster-card-image .placeholder-text {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      padding: 12px; text-align: center; font-size: 11px; color: var(--text-3);
+    }
+    .poster-card-badges {
+      position: absolute; top: 8px; left: 8px; right: 8px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .badge {
+      padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-ongoing { background: var(--badge-ongoing); color: #fff; }
+    .badge-completed { background: var(--badge-completed); color: #fff; }
+    .badge-quality { background: rgba(0,0,0,0.7); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+    .poster-card-ep {
+      position: absolute; bottom: 8px; left: 8px;
+      font-size: 11px; font-weight: 700; color: #fff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    .poster-card-score {
+      position: absolute; bottom: 8px; right: 8px;
+      font-size: 11px; font-weight: 700; color: var(--accent);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    .poster-card-info { padding: 10px; }
+    .poster-card-title {
+      font-size: 12px; font-weight: 600; color: var(--text-1);
+      transition: color 0.15s;
+    }
+    .poster-card:hover .poster-card-title { color: var(--accent); }
+    .poster-card-meta { margin-top: 4px; font-size: 10px; color: var(--text-3); display: flex; gap: 8px; }
+
+    /* ───── Series Detail Page ───── */
+    .detail-banner {
+      position: relative; height: 280px; overflow: hidden;
+      background: var(--bg-surface);
+    }
+    @media (min-width: 768px) { .detail-banner { height: 340px; } }
+    .detail-banner img { width: 100%; height: 100%; object-fit: cover; }
+    .detail-banner-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, var(--bg-page) 0%, transparent 40%),
+                  linear-gradient(to right, var(--bg-page) 0%, transparent 60%);
+    }
+    .detail-content {
+      position: relative; margin-top: -120px; z-index: 10;
+    }
+    .detail-layout { display: flex; gap: 24px; align-items: flex-start; }
+    @media (max-width: 767px) { .detail-layout { flex-direction: column; align-items: center; text-align: center; } }
+    .detail-poster {
+      width: 180px; flex-shrink: 0; border-radius: 10px;
+      overflow: hidden; border: 2px solid var(--border);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5); background: var(--bg-card);
+    }
+    .detail-poster img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+    .detail-info { flex: 1; padding-top: 8px; }
+    .detail-title { font-size: 24px; font-weight: 800; color: var(--text-1); line-height: 1.2; }
+    @media (min-width: 768px) { .detail-title { font-size: 30px; } }
+    .detail-meta-row {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center;
+    }
+    @media (max-width: 767px) { .detail-meta-row { justify-content: center; } }
+    .detail-tag {
+      padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      background: var(--accent-subtle); color: var(--accent);
+    }
+    .detail-stat {
+      font-size: 12px; color: var(--text-2);
+    }
+    .detail-synopsis {
+      margin-top: 16px; font-size: 13px; line-height: 1.7; color: var(--text-2);
+      max-width: 640px;
+    }
+    .detail-actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+    @media (max-width: 767px) { .detail-actions { justify-content: center; } }
+
+    .btn-primary {
+      padding: 10px 24px; border-radius: 8px; font-size: 13px; font-weight: 700;
+      background: var(--accent-hover); color: #fff; transition: all 0.15s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-secondary {
+      padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      background: var(--bg-card); color: var(--text-2); border: 1px solid var(--border);
+      transition: all 0.15s; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-secondary:hover { color: var(--text-1); border-color: var(--text-3); }
+
+    /* ───── Episodes Table ───── */
+    .episodes-section { margin-top: 40px; padding-bottom: 40px; }
+    .episode-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 12px 16px; border-radius: 8px; background: var(--bg-card);
+      border: 1px solid var(--border); margin-bottom: 6px;
+      transition: border-color 0.15s, background 0.15s; cursor: pointer;
+    }
+    .episode-row:hover { background: var(--bg-card-hover); border-color: var(--border-active); }
+    .episode-row-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+    .episode-num {
+      width: 40px; text-align: center; font-size: 13px; font-weight: 700;
+      color: var(--accent); flex-shrink: 0;
+    }
+    .episode-name { font-size: 13px; color: var(--text-1); min-width: 0; }
+    .episode-row-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .episode-size { font-size: 11px; color: var(--text-3); }
+    .episode-play-btn {
+      padding: 6px 16px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      background: var(--accent-hover); color: #fff; transition: background 0.15s;
+    }
+    .episode-play-btn:hover { background: var(--accent); }
+    .episode-dl-btn {
+      padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      background: var(--bg-surface); color: var(--text-2); border: 1px solid var(--border);
+      transition: all 0.15s;
+    }
+    .episode-dl-btn:hover { color: var(--text-1); border-color: var(--text-3); }
+
+    /* ───── Watch Page ───── */
+    .watch-player { background: #000; aspect-ratio: 16/9; max-height: 70vh; }
+    .watch-player video { width: 100%; height: 100%; }
+    .watch-info { padding: 20px 0; }
+    .watch-title { font-size: 18px; font-weight: 700; color: var(--text-1); }
+    .watch-nav { margin-top: 16px; display: flex; gap: 8px; }
+
+    /* ───── Footer ───── */
+    .footer {
+      margin-top: auto; border-top: 1px solid var(--border);
+      padding: 24px 20px; text-align: center; font-size: 11px; color: var(--text-3);
+    }
+
+    /* ───── Empty State ───── */
+    .empty-state { padding: 60px 20px; text-align: center; color: var(--text-3); font-size: 13px; }
+
+    /* ───── Loading Skeleton ───── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 10px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ───── Scrollbar ───── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-page); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-card-hover); border-radius: 3px; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-pahe-crimson selection:text-white">
+<body>
 
-  <!-- ─── Slim Topbar (Animepahe / Lucifer Donghua Style) ───────────────── -->
-  <header class="sticky top-0 z-40 glass-nav">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-      
-      <!-- Brand Logo -->
-      <a href="/" class="flex items-center gap-3 group focus:outline-none flex-shrink-0">
-        <svg class="w-8 h-8 transition-transform group-hover:scale-105" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="512" height="512" rx="120" fill="#121620" stroke="rgba(255, 255, 255, 0.1)" stroke-width="8"/>
-          <path d="M128 384 L128 128 L192 128 L192 384 Z" fill="#FF2A4B"/>
-          <path d="M192 128 L320 384 L384 384 L256 128 Z" fill="#FF2A4B"/>
-          <path d="M320 384 L320 128 L384 128 L384 384 Z" fill="#FF2A4B"/>
-          <circle cx="384" cy="128" r="28" fill="#00F0FF"/>
-          <circle cx="384" cy="128" r="14" fill="#FFFFFF"/>
-        </svg>
-        <div class="flex flex-col">
-          <span class="text-base font-extrabold tracking-wider text-white uppercase">Nakama</span>
-          <span class="text-[9px] font-mono tracking-widest text-pahe-cyan uppercase -mt-1 font-semibold">Network</span>
-        </div>
+  <!-- ═══════ NAVIGATION ═══════ -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#/" class="nav-brand">
+        <svg viewBox="0 0 512 512" fill="none"><rect width="512" height="512" rx="120" fill="var(--bg-card)"/><path d="M128 384V128h64v256z" fill="var(--accent)"/><path d="M192 128l128 256h64L256 128z" fill="var(--accent)"/><path d="M320 384V128h64v256z" fill="var(--accent)"/><circle cx="384" cy="128" r="22" fill="var(--accent)" opacity="0.5"/></svg>
+        <span class="nav-brand-text">
+          <span class="nav-brand-name">Nakama</span>
+          <span class="nav-brand-sub">Network</span>
+        </span>
       </a>
 
-      <!-- Instant Live Search Bar -->
-      <div class="flex-1 max-w-lg relative">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-pahe-textMuted">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
-        </div>
-        <input 
-          id="searchInput" 
-          type="text" 
-          placeholder="Search releases (Press / to search)..." 
-          class="w-full pl-9 pr-10 py-2 bg-pahe-surface border border-pahe-border rounded-lg text-sm text-white placeholder-pahe-textMuted focus:outline-none focus:border-pahe-crimson transition-colors"
-        >
-        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-          <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-pahe-textMuted bg-pahe-base border border-pahe-border rounded">/</kbd>
-        </div>
+      <div class="nav-search">
+        <svg class="nav-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input id="searchInput" type="text" placeholder="Search anime titles...">
       </div>
 
-      <!-- Controls: View Switcher & Telegram -->
-      <div class="flex items-center gap-2">
-        <!-- View Toggle (Grid vs Pahe List) -->
-        <div class="hidden sm:flex items-center bg-pahe-surface border border-pahe-border rounded-lg p-0.5">
-          <button id="viewGridBtn" onclick="setViewMode('grid')" class="p-1.5 rounded text-white bg-pahe-card transition-colors" title="Grid View">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-            </svg>
-          </button>
-          <button id="viewListBtn" onclick="setViewMode('list')" class="p-1.5 rounded text-pahe-textMuted hover:text-white transition-colors" title="Animepahe List View">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Telegram Vault Deep Link -->
-        <a 
-          href="https://t.me/NakamaNetworkbot" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-pahe-surface border border-pahe-border text-xs font-semibold text-pahe-textSecondary hover:text-white hover:border-pahe-textMuted transition-colors"
-        >
-          <svg class="w-4 h-4 text-pahe-cyan" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"/>
-          </svg>
-          <span class="hidden sm:inline">Telegram Vault</span>
+      <div class="nav-actions">
+        <button class="theme-btn active" data-theme-set="midnight" title="Midnight theme">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+        </button>
+        <button class="theme-btn" data-theme-set="crimson" title="Crimson theme">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+        </button>
+        <button class="theme-btn" data-theme-set="ocean" title="Ocean theme">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </button>
+        <a href="https://t.me/NakamaNetworkbot" target="_blank" rel="noopener" class="nav-link">
+          Telegram
         </a>
       </div>
-
     </div>
-  </header>
+  </nav>
 
-  <!-- ─── Main Content ─────────────────────────────────────────────────── -->
-  <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+  <!-- ═══════ PAGE: HOME ═══════ -->
+  <div id="page-home" class="page active">
+    <div class="container">
 
-    <!-- Category / Filter Navigation (Lucifer Donghua style) -->
-    <div class="flex items-center justify-between border-b border-pahe-border pb-4 mb-6 gap-4">
-      <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
-        <button onclick="filterCatalog('all')" class="filter-tab active px-3 py-1.5 rounded-md text-xs font-semibold bg-pahe-crimson text-white">
-          All Releases
-        </button>
-        <button onclick="filterCatalog('ONGOING')" class="filter-tab px-3 py-1.5 rounded-md text-xs font-medium text-pahe-textSecondary bg-pahe-surface border border-pahe-border hover:text-white">
-          Ongoing
-        </button>
-        <button onclick="filterCatalog('COMPLETED')" class="filter-tab px-3 py-1.5 rounded-md text-xs font-medium text-pahe-textSecondary bg-pahe-surface border border-pahe-border hover:text-white">
-          Completed
-        </button>
+      <!-- Latest Releases -->
+      <div class="section-header">
+        <span class="section-title">Latest Releases</span>
+      </div>
+      <div id="latestGrid" class="poster-grid">
+        <div class="skeleton" style="aspect-ratio:2/3"></div>
+        <div class="skeleton" style="aspect-ratio:2/3"></div>
+        <div class="skeleton" style="aspect-ratio:2/3"></div>
+        <div class="skeleton" style="aspect-ratio:2/3"></div>
+        <div class="skeleton" style="aspect-ratio:2/3"></div>
+        <div class="skeleton" style="aspect-ratio:2/3"></div>
       </div>
 
-      <div class="text-xs font-mono text-pahe-textMuted flex-shrink-0">
-        <span id="seriesCount">0</span> series available
-      </div>
-    </div>
-
-    <!-- 1. Grid View (Lucifer Donghua / Modern Poster Card) -->
-    <div id="catalogGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
-      <!-- Loading Skeletons -->
-      <div class="animate-pulse bg-pahe-surface rounded-lg aspect-[2/3] border border-pahe-border"></div>
-      <div class="animate-pulse bg-pahe-surface rounded-lg aspect-[2/3] border border-pahe-border"></div>
-      <div class="animate-pulse bg-pahe-surface rounded-lg aspect-[2/3] border border-pahe-border"></div>
-      <div class="animate-pulse bg-pahe-surface rounded-lg aspect-[2/3] border border-pahe-border"></div>
-      <div class="animate-pulse bg-pahe-surface rounded-lg aspect-[2/3] border border-pahe-border"></div>
-      <div class="animate-pulse bg-pahe-surface rounded-lg aspect-[2/3] border border-pahe-border"></div>
-    </div>
-
-    <!-- 2. Dense List View (Animepahe Signature Releases Feed) -->
-    <div id="catalogList" class="hidden flex flex-col gap-2">
-      <!-- Populated via JS -->
-    </div>
-
-  </main>
-
-  <!-- ─── Master Theater Modal (Lucifer Donghua / Animepahe Hybrid) ─────── -->
-  <div id="theaterModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/95 backdrop-blur-md p-2 sm:p-4 md:p-6 overflow-y-auto">
-    <div class="relative w-full max-w-6xl bg-pahe-surface border border-pahe-border rounded-xl overflow-hidden shadow-2xl flex flex-col max-h-[96vh]">
-      
-      <!-- Modal Top Bar -->
-      <div class="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-pahe-border bg-pahe-base">
-        <div class="flex items-center gap-3 truncate">
-          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-pahe-crimson/20 text-pahe-crimson border border-pahe-crimson/40 uppercase">
-            NOW PLAYING
-          </span>
-          <h3 id="modalTitle" class="text-sm sm:text-base font-bold text-white truncate max-w-xl">
-            Anime Title
-          </h3>
-        </div>
-        <button id="closeModalBtn" class="text-pahe-textMuted hover:text-white p-1 rounded-md transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
+      <!-- Full Catalog -->
+      <div class="section-header">
+        <span class="section-title">Anime Vault</span>
+        <span id="catalogCount" class="section-link mono" style="cursor:default"></span>
       </div>
 
-      <!-- Video Player Viewport -->
-      <div class="relative aspect-video bg-black flex items-center justify-center w-full">
-        <video id="videoElement" class="w-full h-full" controls preload="metadata">
-          <source id="videoSource" src="" type="video/mp4">
-          HTML5 video streaming is not supported on this browser.
-        </video>
+      <!-- Filter Row -->
+      <div style="display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap;">
+        <button class="filter-btn active" onclick="setCatalogFilter('all',this)">All</button>
+        <button class="filter-btn" onclick="setCatalogFilter('ONGOING',this)">Ongoing</button>
+        <button class="filter-btn" onclick="setCatalogFilter('COMPLETED',this)">Completed</button>
       </div>
+      <style>
+        .filter-btn {
+          padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+          background: var(--bg-card); border: 1px solid var(--border); color: var(--text-2);
+          transition: all 0.15s;
+        }
+        .filter-btn:hover { color: var(--text-1); }
+        .filter-btn.active { background: var(--accent-hover); color: #fff; border-color: var(--accent-hover); }
+      </style>
 
-      <!-- Quick Navigation Bar Under Video (Animepahe / Donghua Signature) -->
-      <div class="px-4 sm:px-6 py-3 bg-pahe-base border-b border-pahe-border flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div class="flex items-center gap-2">
-          <button id="prevEpBtn" class="px-3 py-1.5 rounded bg-pahe-surface border border-pahe-border text-pahe-textSecondary hover:text-white disabled:opacity-40 transition-colors">
-            Previous
-          </button>
-          <span id="currentEpLabel" class="font-mono text-pahe-cyan font-bold px-2">
-            EP 01
-          </span>
-          <button id="nextEpBtn" class="px-3 py-1.5 rounded bg-pahe-surface border border-pahe-border text-pahe-textSecondary hover:text-white disabled:opacity-40 transition-colors">
-            Next
-          </button>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <span class="text-pahe-textMuted font-mono">1080p FHD</span>
-          <span class="text-pahe-border">•</span>
-          <a 
-            id="modalTgLink" 
-            href="#" 
-            target="_blank" 
-            class="px-3 py-1.5 rounded bg-pahe-surface border border-pahe-border text-pahe-cyan hover:border-pahe-cyan transition-colors"
-          >
-            Forward to Telegram
-          </a>
-        </div>
-      </div>
-
-      <!-- Episode Grid Selector (Lucifer Donghua Numbered Pills) -->
-      <div class="p-4 sm:p-6 overflow-y-auto custom-scrollbar flex-1 bg-pahe-surface">
-        <div class="flex items-center justify-between mb-3">
-          <h4 class="text-xs font-bold text-white uppercase tracking-wider">Select Episode</h4>
-          <span id="epCountBadge" class="text-[11px] font-mono text-pahe-textMuted">0 Episodes</span>
-        </div>
-        
-        <!-- Numbered Pill Grid -->
-        <div id="episodeGridContainer" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-16 gap-2">
-          <!-- Populated by JS -->
-        </div>
-
-        <!-- Series Synopsis & Details -->
-        <div class="mt-6 pt-4 border-t border-pahe-border">
-          <p id="modalDesc" class="text-xs text-pahe-textSecondary leading-relaxed">
-            <!-- Synopsis -->
-          </p>
-        </div>
-      </div>
-
+      <div id="catalogGrid" class="poster-grid"></div>
+      <div style="height:48px"></div>
     </div>
   </div>
 
-  <!-- ─── Footer ────────────────────────────────────────────────────────── -->
-  <footer class="border-t border-pahe-border py-8 mt-16 text-center text-xs text-pahe-textMuted bg-pahe-base">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2">
-        <span class="font-extrabold text-white">NAKAMA NETWORK</span>
-        <span>•</span>
-        <span>Anime & Donghua Vault</span>
+  <!-- ═══════ PAGE: SEARCH RESULTS ═══════ -->
+  <div id="page-search" class="page">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-title">Search Results</span>
+        <span id="searchQuery" class="section-link mono" style="cursor:default"></span>
       </div>
-      <div>
-        <span>Storage Vault: Telegram Storage Channel</span>
-        <span class="mx-2">•</span>
-        <span>Metadata: AniList API</span>
+      <div id="searchResults" class="poster-grid"></div>
+      <div style="height:48px"></div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE: SERIES DETAIL ═══════ -->
+  <div id="page-detail" class="page">
+    <div id="detailBanner" class="detail-banner">
+      <img id="detailBannerImg" src="" alt="">
+      <div class="detail-banner-overlay"></div>
+    </div>
+    <div class="container detail-content">
+      <div class="detail-layout">
+        <div class="detail-poster">
+          <img id="detailPoster" src="" alt="">
+        </div>
+        <div class="detail-info">
+          <h1 id="detailTitle" class="detail-title"></h1>
+          <div id="detailMeta" class="detail-meta-row"></div>
+          <p id="detailSynopsis" class="detail-synopsis"></p>
+          <div class="detail-actions">
+            <button id="detailPlayBtn" class="btn-primary">Play First Episode</button>
+            <a id="detailTgLink" href="#" target="_blank" class="btn-secondary">Get via Telegram</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="episodes-section">
+        <div class="section-header" style="padding-top:0">
+          <span class="section-title">Episodes</span>
+          <span id="detailEpCount" class="mono" style="font-size:12px; color:var(--text-3)"></span>
+        </div>
+        <div id="episodesList"></div>
       </div>
     </div>
+  </div>
+
+  <!-- ═══════ PAGE: WATCH ═══════ -->
+  <div id="page-watch" class="page">
+    <div class="watch-player">
+      <video id="watchVideo" controls preload="metadata">
+        <source id="watchSource" src="" type="video/mp4">
+      </video>
+    </div>
+    <div class="container watch-info">
+      <h2 id="watchTitle" class="watch-title"></h2>
+      <div id="watchSeriesLink" style="margin-top:6px; font-size:12px; color:var(--text-2); cursor:pointer;"></div>
+      <div class="watch-nav">
+        <button id="watchPrev" class="btn-secondary" disabled>Previous</button>
+        <button id="watchNext" class="btn-secondary" disabled>Next</button>
+        <a id="watchTgBtn" href="#" target="_blank" class="btn-secondary" style="margin-left:auto">Download via Telegram</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ FOOTER ═══════ -->
+  <footer class="footer">
+    <div>Nakama Network &mdash; Decentralised media vault &middot; Metadata via AniList &middot; Storage via Telegram</div>
   </footer>
 
-  <!-- ─── Client Application Logic ─────────────────────────────────────── -->
+  <!-- ═══════ APPLICATION LOGIC ═══════ -->
   <script>
-    let currentCatalog = [];
-    let displayedCatalog = [];
-    let activeFilter = 'all';
-    let currentViewMode = 'grid';
-    let activeSeriesData = null;
-    let activeEpisodeIndex = 0;
+    // --- State ---
+    let catalog = [];
+    let catalogFilter = 'all';
+    let currentSeries = null; // full series response data when on detail page
 
-    // DOM References
-    const catalogGrid = document.getElementById('catalogGrid');
-    const catalogList = document.getElementById('catalogList');
-    const seriesCount = document.getElementById('seriesCount');
-    const searchInput = document.getElementById('searchInput');
-    const theaterModal = document.getElementById('theaterModal');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const videoElement = document.getElementById('videoElement');
-    const videoSource = document.getElementById('videoSource');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalDesc = document.getElementById('modalDesc');
-    const currentEpLabel = document.getElementById('currentEpLabel');
-    const epCountBadge = document.getElementById('epCountBadge');
-    const episodeGridContainer = document.getElementById('episodeGridContainer');
-    const prevEpBtn = document.getElementById('prevEpBtn');
-    const nextEpBtn = document.getElementById('nextEpBtn');
-    const modalTgLink = document.getElementById('modalTgLink');
-    const viewGridBtn = document.getElementById('viewGridBtn');
-    const viewListBtn = document.getElementById('viewListBtn');
+    // --- DOM ---
+    const $ = (id) => document.getElementById(id);
 
-    // 1. Fetch Catalog
+    // --- Themes ---
+    document.querySelectorAll('[data-theme-set]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.themeSet;
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('nakama-theme', t);
+        document.querySelectorAll('[data-theme-set]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+    (function loadTheme() {
+      const saved = localStorage.getItem('nakama-theme') || 'midnight';
+      document.documentElement.setAttribute('data-theme', saved);
+      document.querySelectorAll('[data-theme-set]').forEach(b => {
+        b.classList.toggle('active', b.dataset.themeSet === saved);
+      });
+    })();
+
+    // --- Router ---
+    function navigate(hash) {
+      if (location.hash !== hash) location.hash = hash;
+    }
+
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const el = $(id);
+      if (el) el.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    async function handleRoute() {
+      const hash = location.hash || '#/';
+      if (hash === '#/' || hash === '#') {
+        showPage('page-home');
+        if (catalog.length === 0) await loadCatalog();
+      } else if (hash.startsWith('#/anime/')) {
+        const name = decodeURIComponent(hash.replace('#/anime/', ''));
+        showPage('page-detail');
+        await loadSeriesDetail(name);
+      } else if (hash.startsWith('#/watch/')) {
+        const parts = hash.replace('#/watch/', '').split('/');
+        const fileId = parseInt(parts[0]);
+        const seriesName = parts[1] ? decodeURIComponent(parts[1]) : null;
+        showPage('page-watch');
+        startPlayback(fileId, seriesName);
+      } else if (hash.startsWith('#/search/')) {
+        const q = decodeURIComponent(hash.replace('#/search/', ''));
+        showPage('page-search');
+        await runSearch(q);
+      } else {
+        showPage('page-home');
+      }
+    }
+
+    window.addEventListener('hashchange', handleRoute);
+    window.addEventListener('load', handleRoute);
+
+    // --- Data Loading ---
+
     async function loadCatalog() {
       try {
         const resp = await fetch('/api/catalog');
         const data = await resp.json();
         if (data.status === 'ok') {
-          currentCatalog = data.catalog;
-          applyFilterAndRender();
+          catalog = data.catalog;
+          renderCatalog();
+          renderLatest();
         }
-      } catch (err) {
-        console.error('Failed to load catalog:', err);
-        catalogGrid.innerHTML = `
-          <div class="col-span-full py-16 text-center text-xs text-pahe-textMuted">
-            Failed to connect to the Nakama API Gateway.
-          </div>
-        `;
+      } catch (e) {
+        $('catalogGrid').innerHTML = '<div class="empty-state">Could not load catalog. Is the server running?</div>';
       }
     }
 
-    // 2. View Mode Switcher (Grid vs Animepahe List)
-    function setViewMode(mode) {
-      currentViewMode = mode;
-      if (mode === 'grid') {
-        catalogGrid.classList.remove('hidden');
-        catalogList.classList.add('hidden');
-        viewGridBtn.className = 'p-1.5 rounded text-white bg-pahe-card transition-colors';
-        viewListBtn.className = 'p-1.5 rounded text-pahe-textMuted hover:text-white transition-colors';
-      } else {
-        catalogGrid.classList.add('hidden');
-        catalogList.classList.remove('hidden');
-        viewListBtn.className = 'p-1.5 rounded text-white bg-pahe-card transition-colors';
-        viewGridBtn.className = 'p-1.5 rounded text-pahe-textMuted hover:text-white transition-colors';
+    function renderCatalog() {
+      let items = catalog;
+      if (catalogFilter !== 'all') {
+        items = items.filter(i => i.status === catalogFilter);
       }
-      applyFilterAndRender();
+      $('catalogCount').textContent = items.length + ' series';
+      $('catalogGrid').innerHTML = items.length ? items.map(posterCardHtml).join('') : '<div class="empty-state">No series match the current filter.</div>';
     }
 
-    // 3. Filter Catalog
-    function filterCatalog(filter) {
-      activeFilter = filter;
-      document.querySelectorAll('.filter-tab').forEach(b => {
-        b.className = 'filter-tab px-3 py-1.5 rounded-md text-xs font-medium text-pahe-textSecondary bg-pahe-surface border border-pahe-border hover:text-white';
-      });
-      event.target.className = 'filter-tab active px-3 py-1.5 rounded-md text-xs font-semibold bg-pahe-crimson text-white';
-      applyFilterAndRender();
+    function renderLatest() {
+      // Show the first 6 from catalog sorted by latest_file_id descending as a proxy for recency
+      const sorted = [...catalog].sort((a, b) => (b.latest_file_id || 0) - (a.latest_file_id || 0)).slice(0, 6);
+      $('latestGrid').innerHTML = sorted.length ? sorted.map(posterCardHtml).join('') : '<div class="empty-state">No releases yet.</div>';
     }
 
-    function applyFilterAndRender() {
-      let filtered = [...currentCatalog];
-      if (activeFilter !== 'all') {
-        filtered = filtered.filter(item => item.status === activeFilter);
-      }
-
-      const q = searchInput.value.toLowerCase().trim();
-      if (q) {
-        filtered = filtered.filter(item => item.name.toLowerCase().includes(q));
-      }
-
-      displayedCatalog = filtered;
-      seriesCount.textContent = displayedCatalog.length;
-
-      if (currentViewMode === 'grid') {
-        renderGridView(displayedCatalog);
-      } else {
-        renderListView(displayedCatalog);
-      }
+    function setCatalogFilter(filter, btn) {
+      catalogFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCatalog();
     }
 
-    // 4. Render Grid View (Lucifer Donghua style)
-    function renderGridView(items) {
-      if (items.length === 0) {
-        catalogGrid.innerHTML = `<div class="col-span-full py-16 text-center text-xs text-pahe-textMuted">No releases found matching query.</div>`;
-        return;
-      }
+    function posterCardHtml(item) {
+      const img = item.cover_image
+        ? `<img src="${item.cover_image}" alt="${esc(item.display_title || item.name)}" loading="lazy">`
+        : `<div class="placeholder-text mono">${esc(item.name)}</div>`;
 
-      catalogGrid.innerHTML = items.map(item => {
-        const poster = item.cover_image || '';
-        const statusBadge = item.status === 'COMPLETED' ? 'bg-green-600/80' : 'bg-pahe-crimson/80';
-        
-        return `
-          <div 
-            onclick="openSeries('${encodeURIComponent(item.name)}')" 
-            class="group cursor-pointer bg-pahe-surface rounded-lg overflow-hidden border border-pahe-border hover:border-pahe-crimson transition-all duration-200 flex flex-col"
-          >
-            <div class="aspect-[2/3] bg-pahe-card relative overflow-hidden">
-              ${poster ? `<img src="${poster}" alt="${escapeHtml(item.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">` : `<div class="w-full h-full flex items-center justify-center p-3 text-center text-[11px] font-mono text-pahe-textMuted">${escapeHtml(item.name)}</div>`}
-              <div class="absolute inset-0 bg-gradient-to-t from-pahe-base via-transparent to-transparent opacity-90"></div>
-              
-              <!-- Badges -->
-              <div class="absolute top-2 left-2 flex gap-1">
-                <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold text-white ${statusBadge}">
-                  ${item.status}
-                </span>
-                <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-black/70 text-pahe-cyan border border-white/10">
-                  SUB
-                </span>
-              </div>
-              <div class="absolute top-2 right-2">
-                <span class="px-1.5 py-0.5 rounded text-[9px] font-mono text-white bg-black/70 border border-white/10">
-                  1080p
-                </span>
-              </div>
+      const statusCls = item.status === 'COMPLETED' ? 'badge-completed' : 'badge-ongoing';
+      const score = item.score ? (item.score / 10).toFixed(1) : '';
 
-              <!-- Episode Count at bottom -->
-              <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px] font-mono font-bold">
-                <span class="text-white drop-shadow">EP ${item.total_episodes}</span>
-                ${item.score ? `<span class="text-pahe-cyan">★ ${(item.score / 10).toFixed(1)}</span>` : ''}
-              </div>
+      return `
+        <div class="poster-card" onclick="navigate('#/anime/${encodeURIComponent(item.name)}')">
+          <div class="poster-card-image">
+            ${img}
+            <div class="gradient-overlay"></div>
+            <div class="poster-card-badges">
+              <span class="badge ${statusCls}">${item.status}</span>
+              <span class="badge badge-quality mono">1080p</span>
             </div>
-
-            <div class="p-2.5 flex-1 flex flex-col justify-between">
-              <h3 class="text-xs font-semibold text-white line-clamp-2 group-hover:text-pahe-crimson transition-colors">
-                ${escapeHtml(item.name)}
-              </h3>
-              <div class="flex items-center justify-between text-[10px] text-pahe-textMuted font-mono mt-2">
-                <span>${item.year || '2026'}</span>
-                <span>${item.total_downloads} plays</span>
-              </div>
+            <span class="poster-card-ep mono">EP ${item.total_episodes}</span>
+            ${score ? `<span class="poster-card-score mono">${score}</span>` : ''}
+          </div>
+          <div class="poster-card-info">
+            <div class="poster-card-title line-clamp-2">${esc(item.display_title || item.name)}</div>
+            <div class="poster-card-meta mono">
+              ${item.year ? `<span>${item.year}</span>` : ''}
+              ${item.genres.length ? `<span>${item.genres[0]}</span>` : ''}
             </div>
           </div>
-        `;
-      }).join('');
+        </div>`;
     }
 
-    // 5. Render Dense Animepahe List View
-    function renderListView(items) {
-      if (items.length === 0) {
-        catalogList.innerHTML = `<div class="py-16 text-center text-xs text-pahe-textMuted">No releases found.</div>`;
-        return;
-      }
+    // --- Series Detail ---
 
-      catalogList.innerHTML = items.map(item => `
-        <div 
-          onclick="openSeries('${encodeURIComponent(item.name)}')" 
-          class="cursor-pointer bg-pahe-surface hover:bg-pahe-card border border-pahe-border hover:border-pahe-crimson/50 rounded-lg p-3 flex items-center justify-between gap-4 transition-colors"
-        >
-          <div class="flex items-center gap-3 truncate">
-            <span class="px-2 py-1 rounded text-xs font-mono font-bold bg-pahe-crimson/20 text-pahe-crimson border border-pahe-crimson/30">
-              EP ${item.total_episodes}
-            </span>
-            <div class="truncate">
-              <h4 class="text-xs sm:text-sm font-semibold text-white truncate hover:text-pahe-crimson transition-colors">
-                ${escapeHtml(item.name)}
-              </h4>
-              <div class="flex items-center gap-2 text-[10px] text-pahe-textMuted font-mono mt-0.5">
-                <span>Japanese Audio</span>
-                <span>•</span>
-                <span>English Subtitles</span>
-                <span>•</span>
-                <span>1080p FHD</span>
-              </div>
-            </div>
-          </div>
+    async function loadSeriesDetail(name) {
+      $('detailTitle').textContent = 'Loading...';
+      $('episodesList').innerHTML = '';
 
-          <div class="flex items-center gap-3 flex-shrink-0">
-            <span class="hidden md:inline-block text-[11px] font-mono text-pahe-textMuted">
-              ${item.total_downloads} plays
-            </span>
-            <button class="px-3 py-1.5 rounded bg-pahe-crimson hover:bg-pahe-crimsonHover text-white text-xs font-semibold transition-colors">
-              Watch
-            </button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // 6. Open Series Theater Modal
-    async function openSeries(encodedName) {
       try {
-        const resp = await fetch(`/api/series/${encodedName}`);
+        const resp = await fetch(`/api/series/${encodeURIComponent(name)}`);
         const data = await resp.json();
-        if (data.status === 'ok') {
-          activeSeriesData = data;
-          modalTitle.textContent = data.series;
-          modalDesc.textContent = data.description || 'Full series archive ready for streaming via Telegram media vault.';
-          epCountBadge.textContent = `${data.total_episodes} Episodes`;
-          modalTgLink.href = `https://t.me/NakamaNetworkbot?start=search_${encodedName}`;
-
-          // Render Numbered Pill Grid (Lucifer Donghua style)
-          episodeGridContainer.innerHTML = data.episodes.map((ep, idx) => `
-            <button 
-              id="epPill_${idx}" 
-              onclick="playEpisodeIndex(${idx})" 
-              class="ep-pill py-2 text-xs font-mono font-bold rounded bg-pahe-base border border-pahe-border hover:border-pahe-crimson transition-colors text-white"
-            >
-              ${ep.episode !== null ? ep.episode : (idx + 1)}
-            </button>
-          `).join('');
-
-          // Auto-play first episode
-          if (data.episodes.length > 0) {
-            playEpisodeIndex(0);
-          }
-
-          theaterModal.classList.remove('hidden');
+        if (data.status !== 'ok') {
+          $('detailTitle').textContent = 'Series not found';
+          return;
         }
-      } catch (err) {
-        console.error('Failed to open series:', err);
+        currentSeries = data;
+
+        // Banner
+        if (data.banner_image) {
+          $('detailBannerImg').src = data.banner_image;
+          $('detailBannerImg').style.display = '';
+        } else if (data.cover_image) {
+          $('detailBannerImg').src = data.cover_image;
+          $('detailBannerImg').style.display = '';
+        } else {
+          $('detailBannerImg').style.display = 'none';
+        }
+
+        // Poster
+        $('detailPoster').src = data.cover_image || '';
+        $('detailPoster').style.display = data.cover_image ? '' : 'none';
+
+        // Info
+        $('detailTitle').textContent = data.display_title || data.series;
+        $('detailSynopsis').textContent = data.description || 'No synopsis available for this title.';
+
+        // Meta tags
+        const tags = [];
+        if (data.year) tags.push(`<span class="detail-tag">${data.year}</span>`);
+        if (data.score) tags.push(`<span class="detail-tag">${(data.score/10).toFixed(1)} / 10</span>`);
+        if (data.anilist_status) tags.push(`<span class="detail-stat">${data.anilist_status.replace('_',' ')}</span>`);
+        (data.genres || []).forEach(g => tags.push(`<span class="detail-tag">${esc(g)}</span>`));
+        if (data.total_episodes_anilist) tags.push(`<span class="detail-stat">${data.total_episodes_anilist} episodes (AniList)</span>`);
+        $('detailMeta').innerHTML = tags.join('');
+
+        // Episode count
+        $('detailEpCount').textContent = data.total_episodes + ' in vault';
+
+        // Play button
+        if (data.episodes.length > 0) {
+          $('detailPlayBtn').style.display = '';
+          $('detailPlayBtn').onclick = () => navigate(`#/watch/${data.episodes[0].id}/${encodeURIComponent(data.series)}`);
+        } else {
+          $('detailPlayBtn').style.display = 'none';
+        }
+
+        // Telegram link
+        $('detailTgLink').href = `https://t.me/NakamaNetworkbot?start=search_${encodeURIComponent(data.series)}`;
+
+        // Episode rows
+        $('episodesList').innerHTML = data.episodes.map((ep, idx) => {
+          const epLabel = ep.episode !== null ? ep.episode : (idx + 1);
+          return `
+            <div class="episode-row" onclick="navigate('#/watch/${ep.id}/${encodeURIComponent(data.series)}')">
+              <div class="episode-row-left">
+                <span class="episode-num mono">${epLabel}</span>
+                <span class="episode-name truncate">${esc(ep.file_name)}</span>
+              </div>
+              <div class="episode-row-right">
+                <span class="episode-size mono">${ep.size_human}</span>
+                <button class="episode-play-btn" onclick="event.stopPropagation(); navigate('#/watch/${ep.id}/${encodeURIComponent(data.series)}')">Play</button>
+                <a class="episode-dl-btn" href="https://t.me/NakamaNetworkbot?start=file_${ep.id}" target="_blank" onclick="event.stopPropagation()">Download</a>
+              </div>
+            </div>`;
+        }).join('');
+
+      } catch (e) {
+        $('detailTitle').textContent = 'Error loading series';
       }
     }
 
-    // 7. Play Episode by Index
-    function playEpisodeIndex(idx) {
-      if (!activeSeriesData || !activeSeriesData.episodes[idx]) return;
-      activeEpisodeIndex = idx;
-      const ep = activeSeriesData.episodes[idx];
+    // --- Watch / Playback ---
 
-      modalTitle.textContent = ep.file_name;
-      currentEpLabel.textContent = `EP ${ep.episode !== null ? ep.episode : (idx + 1)}`;
-      videoSource.src = `/stream/${ep.id}`;
-      videoElement.load();
-      videoElement.play().catch(() => {});
+    function startPlayback(fileId, seriesName) {
+      $('watchSource').src = `/stream/${fileId}`;
+      $('watchVideo').load();
+      $('watchVideo').play().catch(() => {});
+      $('watchTgBtn').href = `https://t.me/NakamaNetworkbot?start=file_${fileId}`;
 
-      // Update active pill highlight
-      document.querySelectorAll('.ep-pill').forEach(p => {
-        p.className = 'ep-pill py-2 text-xs font-mono font-bold rounded bg-pahe-base border border-pahe-border hover:border-pahe-crimson transition-colors text-white';
-      });
-      const activePill = document.getElementById(`epPill_${idx}`);
-      if (activePill) {
-        activePill.className = 'ep-pill py-2 text-xs font-mono font-bold rounded bg-pahe-crimson border border-pahe-crimson text-white';
+      // Find episode info from currentSeries
+      if (currentSeries && currentSeries.episodes) {
+        const idx = currentSeries.episodes.findIndex(e => e.id === fileId);
+        if (idx >= 0) {
+          const ep = currentSeries.episodes[idx];
+          $('watchTitle').textContent = ep.file_name;
+
+          // Prev / Next
+          $('watchPrev').disabled = idx === 0;
+          $('watchNext').disabled = idx >= currentSeries.episodes.length - 1;
+          $('watchPrev').onclick = () => {
+            if (idx > 0) navigate(`#/watch/${currentSeries.episodes[idx-1].id}/${encodeURIComponent(currentSeries.series)}`);
+          };
+          $('watchNext').onclick = () => {
+            if (idx < currentSeries.episodes.length - 1) navigate(`#/watch/${currentSeries.episodes[idx+1].id}/${encodeURIComponent(currentSeries.series)}`);
+          };
+        } else {
+          $('watchTitle').textContent = `File #${fileId}`;
+        }
+      } else {
+        $('watchTitle').textContent = `File #${fileId}`;
+        $('watchPrev').disabled = true;
+        $('watchNext').disabled = true;
       }
 
-      // Prev/Next button states
-      prevEpBtn.disabled = idx === 0;
-      nextEpBtn.disabled = idx >= activeSeriesData.episodes.length - 1;
+      // Series back link
+      if (seriesName) {
+        $('watchSeriesLink').innerHTML = `<span style="color:var(--accent); cursor:pointer;">&larr; Back to ${esc(seriesName)}</span>`;
+        $('watchSeriesLink').onclick = () => navigate(`#/anime/${encodeURIComponent(seriesName)}`);
+      } else {
+        $('watchSeriesLink').innerHTML = '';
+      }
     }
 
-    // Prev / Next Listeners
-    prevEpBtn.onclick = () => {
-      if (activeEpisodeIndex > 0) playEpisodeIndex(activeEpisodeIndex - 1);
-    };
-    nextEpBtn.onclick = () => {
-      if (activeSeriesData && activeEpisodeIndex < activeSeriesData.episodes.length - 1) {
-        playEpisodeIndex(activeEpisodeIndex + 1);
+    // --- Search ---
+
+    let searchTimer;
+    $('searchInput').addEventListener('input', (e) => {
+      clearTimeout(searchTimer);
+      const q = e.target.value.trim();
+      searchTimer = setTimeout(() => {
+        if (q.length >= 2) {
+          navigate(`#/search/${encodeURIComponent(q)}`);
+        } else if (q.length === 0) {
+          navigate('#/');
+        }
+      }, 350);
+    });
+
+    async function runSearch(query) {
+      $('searchQuery').textContent = `"${query}"`;
+      $('searchResults').innerHTML = '<div class="empty-state">Searching...</div>';
+
+      // First search locally in cached catalog
+      const localResults = catalog.filter(i =>
+        i.name.toLowerCase().includes(query.toLowerCase()) ||
+        (i.display_title && i.display_title.toLowerCase().includes(query.toLowerCase()))
+      );
+
+      if (localResults.length > 0) {
+        $('searchResults').innerHTML = localResults.map(posterCardHtml).join('');
+      } else {
+        $('searchResults').innerHTML = '<div class="empty-state">No results found for this query.</div>';
       }
-    };
+    }
 
-    // 8. Close Modal
-    closeModalBtn.addEventListener('click', () => {
-      videoElement.pause();
-      videoSource.src = '';
-      theaterModal.classList.add('hidden');
-    });
-
-    // 9. Search listener
-    searchInput.addEventListener('input', () => {
-      applyFilterAndRender();
-    });
-
-    // Keyboard Shortcuts
+    // Keyboard: / to focus search, Escape to go home
     window.addEventListener('keydown', (e) => {
-      if (e.key === '/' && document.activeElement !== searchInput) {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
-        searchInput.focus();
+        $('searchInput').focus();
       }
-      if (e.key === 'Escape' && !theaterModal.classList.contains('hidden')) {
-        closeModalBtn.click();
-      }
-      if (!theaterModal.classList.contains('hidden')) {
-        if (e.key === ']' && !nextEpBtn.disabled) nextEpBtn.click();
-        if (e.key === '[' && !prevEpBtn.disabled) prevEpBtn.click();
+      if (e.key === 'Escape') {
+        $('searchInput').blur();
+        $('searchInput').value = '';
+        navigate('#/');
       }
     });
 
-    // Helper: Escape HTML
-    function escapeHtml(str) {
-      if (!str) return '';
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
+    // --- Helpers ---
+    function esc(s) {
+      if (!s) return '';
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
     }
-
-    // Initialize
-    loadCatalog();
   </script>
 </body>
 </html>
