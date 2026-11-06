@@ -517,7 +517,8 @@ async def get_all_series_summaries(session: AsyncSession) -> list[dict]:
     files = list((await session.execute(select(File).order_by(File.created_at.desc()))).scalars().all())
     series_dict: dict[str, list[File]] = {}
     for f in files:
-        s_name = extract_series_name(f.file_name) or f.file_name
+        raw_name = extract_series_name(f.file_name) or f.file_name
+        s_name = raw_name.title()
         series_dict.setdefault(s_name, []).append(f)
 
     summaries = []
