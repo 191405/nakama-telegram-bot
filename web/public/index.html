@@ -422,16 +422,7 @@
         </div>
       </section>
 
-      <!-- Latest Episode Releases (Animepahe Style) -->
-      <section>
-        <div class="section-head">
-          <span class="section-head-title">Latest Releases</span>
-          <span class="section-head-count mono">Recently added</span>
-        </div>
-        <div id="latestFeed" class="releases-feed"></div>
-      </section>
-
-      <!-- Complete Anime Vault (Lucifer Donghua Poster Grid) -->
+      <!-- Complete Anime Vault (Poster Grid) -->
       <section>
         <div class="section-head">
           <span class="section-head-title">Anime Vault</span>
@@ -605,28 +596,7 @@
         $('heroTgBtn').href = `https://t.me/NakamaNetworkbot?start=search_${encodeURIComponent(hero.name)}`;
       }
 
-      // 2. Latest Releases (Animepahe feed)
-      if (latestReleases.length > 0) {
-        $('latestFeed').innerHTML = latestReleases.map(item => `
-          <div class="release-card" onclick="navigate('#/watch/${item.id}/${encodeURIComponent(item.series)}')">
-            <div class="release-card-thumb">
-              ${item.cover_image ? `<img src="${item.cover_image}" alt="${esc(item.display_title)}" loading="lazy">` : `<div style="padding:10px; font-size:10px; color:#64748B;">NO ART</div>`}
-            </div>
-            <div class="release-card-body">
-              <div>
-                <div class="release-card-title truncate">${esc(item.display_title || item.series)}</div>
-                <div class="release-card-ep mono">Episode ${item.episode}</div>
-              </div>
-              <div class="release-card-foot">
-                <span class="mono">${item.size}</span>
-                <span class="btn-stream-sm">Stream</span>
-              </div>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      // 3. Complete Anime Vault Poster Grid
+      // Complete Anime Vault Poster Grid
       $('catalogGrid').innerHTML = catalog.map(item => `
         <div class="poster-card" onclick="navigate('#/anime/${encodeURIComponent(item.name)}')">
           <div class="poster-media">
