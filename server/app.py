@@ -64,18 +64,51 @@ async def handle_catalog(request: web.Request) -> web.Response:
     async with async_session() as session:
         summaries = await queries.get_all_series_summaries(session)
 
-    results = []
-    for s in summaries:
-        sample = s["sample_file"]
-        results.append({
-            "name": s["name"],
+    import asyncio
+
+    async def enrich_summary(s: dict) -> dict:
+        name = s["name"]
+        sample = s.get("sample_file")
+        latest = s.get("latest_file") or sample
+        cover_image = None
+        banner_image = None
+        score = None
+        status = "ONGOING"
+        genres = []
+        year = None
+
+        try:
+            meta = await fetch_anime_info(name)
+            if meta:
+                covers = meta.get("coverImage") or {}
+                cover_image = covers.get("extraLarge") or covers.get("large")
+                banner_image = meta.get("bannerImage")
+                score = meta.get("averageScore")
+                year = meta.get("seasonYear")
+                genres = (meta.get("genres") or [])[:3]
+                if meta.get("status") == "FINISHED":
+                    status = "COMPLETED"
+        except Exception:
+            pass
+
+        return {
+            "name": name,
             "total_episodes": s["total_episodes"],
             "total_downloads": s["total_downloads"],
             "sample_file_id": sample.id if sample else None,
-            "latest_file_id": s["latest_file"].id if s.get("latest_file") else None,
-        })
+            "latest_file_id": latest.id if latest else None,
+            "latest_file_name": latest.file_name if latest else "",
+            "cover_image": cover_image,
+            "banner_image": banner_image,
+            "score": score,
+            "status": status,
+            "genres": genres,
+            "year": year,
+        }
 
-    return web.json_response({"status": "ok", "count": len(results), "catalog": results})
+    results = await asyncio.gather(*[enrich_summary(s) for s in summaries])
+
+    return web.json_response({"status": "ok", "count": len(results), "catalog": list(results)})
 
 
 async def handle_series_detail(request: web.Request) -> web.Response:
@@ -241,9 +274,14 @@ async def handle_spa_index(request: web.Request) -> web.FileResponse:
 # ─── Application Factory ─────────────────────────────────────────────────────
 
 
+async def on_startup(app: web.Application) -> None:
+    await init_db()
+
+
 def create_app() -> web.Application:
     """Build and configure the aiohttp web application."""
     app = web.Application()
+    app.on_startup.append(on_startup)
 
     # API endpoints
     app.router.add_get("/api/catalog", handle_catalog)
@@ -253,25 +291,22 @@ def create_app() -> web.Application:
 
     # Static assets and SPA routes
     if WEB_ROOT.exists():
-        app.router.add_static("/assets/", path=str(WEB_ROOT / "assets"), name="assets")
+        assets_dir = WEB_ROOT / "assets"
+        if assets_dir.exists():
+            app.router.add_static("/assets/", path=str(assets_dir), name="assets")
     app.router.add_get("/", handle_spa_index)
     app.router.add_get("/{path:.*}", handle_spa_index)
 
     return app
 
 
-async def run_server(host: str = "0.0.0.0", port: int = 8080) -> None:
+def main() -> None:
     """Run the standalone web server."""
-    await init_db()
     app = create_app()
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, host, port)
-    logger.info("Nakama Network Web & Streaming Gateway running on http://%s:%d", host, port)
-    await site.start()
+    logger.info("Starting Nakama Network Web & Streaming Gateway on http://127.0.0.1:8080")
+    web.run_app(app, host="127.0.0.1", port=8080)
 
 
 if __name__ == "__main__":
-    import asyncio
+    main()
 
-    asyncio.run(run_server())
