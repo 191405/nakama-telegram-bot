@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nakama Network | Anime Vault & Streaming Platform</title>
+  <meta name="description" content="High-performance decentralized anime streaming platform and media vault.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              base: '#090B10',
+              surface: '#111622',
+              card: '#161C2C',
+              border: 'rgba(255, 255, 255, 0.08)',
+              accent: '#E50914',
+              accentHover: '#F40612',
+              cyan: '#00D8F6',
+              textPrimary: '#FFFFFF',
+              textSecondary: '#94A3B8',
+              textMuted: '#64748B',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #090B10;
+      color: #FFFFFF;
+      font-family: 'Inter', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #090B10;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    .glass-nav {
+      background: rgba(9, 11, 16, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .glass-panel {
+      background: rgba(17, 22, 34, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-brand-accent selection:text-white">
+
+  <!-- ─── Top Navigation ────────────────────────────────────────────────── -->
+  <header class="sticky top-0 z-40 glass-nav">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-3 group focus:outline-none">
+        <svg class="w-8 h-8 text-brand-accent transition-transform group-hover:scale-105" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="8" fill="#161C2C"/>
+          <path d="M8 24V8L18 20V8L24 8V24L14 12V24H8Z" fill="#E50914"/>
+          <circle cx="24" cy="8" r="2" fill="#00D8F6"/>
+        </svg>
+        <div class="flex flex-col">
+          <span class="text-base font-bold tracking-wider text-white uppercase">Nakama</span>
+          <span class="text-[10px] font-mono tracking-widest text-brand-textMuted uppercase -mt-1">Network</span>
+        </div>
+      </a>
+
+      <!-- Search Input -->
+      <div class="flex-1 max-w-md relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-brand-textMuted">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        <input 
+          id="searchInput" 
+          type="text" 
+          placeholder="Search anime titles, episodes (Press / to focus)..." 
+          class="w-full pl-9 pr-10 py-1.5 bg-brand-surface border border-brand-border rounded-lg text-sm text-white placeholder-brand-textMuted focus:outline-none focus:border-brand-accent transition-colors"
+        >
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-brand-textMuted bg-brand-base border border-brand-border rounded">/</kbd>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3">
+        <a 
+          href="https://t.me/NakamaNetworkbot" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-brand-surface border border-brand-border text-xs font-medium text-brand-textSecondary hover:text-white hover:border-brand-textMuted transition-colors"
+        >
+          <svg class="w-4 h-4 text-brand-cyan" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"/>
+          </svg>
+          <span>Telegram Vault</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ─── Main Content Area ─────────────────────────────────────────────── -->
+  <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    
+    <!-- Hero Spotlight Section -->
+    <section id="heroSection" class="relative rounded-2xl overflow-hidden glass-panel mb-10 border border-brand-border">
+      <div id="heroBackdrop" class="absolute inset-0 bg-cover bg-center opacity-30 filter blur-sm scale-105"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-brand-base via-brand-base/80 to-transparent"></div>
+      
+      <div class="relative z-10 p-6 sm:p-10 max-w-2xl">
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-brand-surface border border-brand-border text-xs font-mono text-brand-cyan mb-4">
+          <span class="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse"></span>
+          <span>STREAMING VAULT ACTIVE</span>
+        </div>
+        <h1 id="heroTitle" class="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-3">Loading Catalog...</h1>
+        <p id="heroDesc" class="text-sm text-brand-textSecondary leading-relaxed mb-6 line-clamp-3">
+          Access high-bitrate anime releases directly from our Telegram-backed media storage. Instant range-seeking and full episodes without external ads.
+        </p>
+        <div class="flex items-center gap-3">
+          <button id="heroPlayBtn" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-sm font-semibold transition-all">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <span>Play Latest Episode</span>
+          </button>
+          <a href="#catalogGrid" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-surface border border-brand-border text-brand-textSecondary hover:text-white text-sm font-medium transition-colors">
+            <span>Browse Vault</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Catalog Section Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-bold tracking-tight text-white">Indexed Anime Series</h2>
+        <p class="text-xs text-brand-textMuted mt-0.5">Directly mirrored from private Telegram storage</p>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-mono text-brand-textMuted">
+        <span id="seriesCount">0</span> series indexed
+      </div>
+    </div>
+
+    <!-- Series Grid -->
+    <div id="catalogGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+      <!-- Skeleton Loading Cards -->
+      <div class="animate-pulse bg-brand-surface rounded-xl aspect-[2/3] border border-brand-border"></div>
+      <div class="animate-pulse bg-brand-surface rounded-xl aspect-[2/3] border border-brand-border"></div>
+      <div class="animate-pulse bg-brand-surface rounded-xl aspect-[2/3] border border-brand-border"></div>
+      <div class="animate-pulse bg-brand-surface rounded-xl aspect-[2/3] border border-brand-border"></div>
+      <div class="animate-pulse bg-brand-surface rounded-xl aspect-[2/3] border border-brand-border"></div>
+    </div>
+
+  </main>
+
+  <!-- ─── Theater Video Player Modal ────────────────────────────────────── -->
+  <div id="theaterModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-6">
+    <div class="relative w-full max-w-5xl bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-brand-border bg-brand-base/80">
+        <div class="flex items-center gap-3">
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-brand-accent/20 text-brand-accent border border-brand-accent/30 uppercase">Theater Mode</span>
+          <h3 id="modalTitle" class="text-base font-semibold text-white truncate max-w-md">Playing Episode</h3>
+        </div>
+        <button id="closeModalBtn" class="text-brand-textMuted hover:text-white p-1 rounded-lg transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Video Player Container -->
+      <div class="relative aspect-video bg-black flex items-center justify-center">
+        <video id="videoElement" class="w-full h-full" controls preload="metadata">
+          <source id="videoSource" src="" type="video/mp4">
+          Your browser does not support HTML5 video streaming.
+        </video>
+      </div>
+
+      <!-- Episode Drawer & Meta -->
+      <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-brand-base">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <h4 class="text-sm font-semibold text-white">Episodes in Vault</h4>
+            <p class="text-xs text-brand-textMuted">Select an episode to stream immediately</p>
+          </div>
+          <div id="modalMetaLinks" class="flex items-center gap-2">
+            <!-- Dynamic Actions -->
+          </div>
+        </div>
+        
+        <div id="episodeList" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── Footer ────────────────────────────────────────────────────────── -->
+  <footer class="border-t border-brand-border py-8 mt-16 text-center text-xs text-brand-textMuted">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-white">NAKAMA NETWORK</span>
+        <span>•</span>
+        <span>Distributed Media Streaming Architecture</span>
+      </div>
+      <div>
+        <span>Storage Vault: Telegram CDN</span>
+        <span class="mx-2">•</span>
+        <span>Metadata: AniList API</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─── Client Application Logic ─────────────────────────────────────── -->
+  <script>
+    let currentCatalog = [];
+    let activeSeriesData = null;
+
+    // DOM Elements
+    const catalogGrid = document.getElementById('catalogGrid');
+    const seriesCount = document.getElementById('seriesCount');
+    const heroTitle = document.getElementById('heroTitle');
+    const heroDesc = document.getElementById('heroDesc');
+    const heroBackdrop = document.getElementById('heroBackdrop');
+    const heroPlayBtn = document.getElementById('heroPlayBtn');
+    const searchInput = document.getElementById('searchInput');
+    const theaterModal = document.getElementById('theaterModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const videoElement = document.getElementById('videoElement');
+    const videoSource = document.getElementById('videoSource');
+    const modalTitle = document.getElementById('modalTitle');
+    const episodeList = document.getElementById('episodeList');
+    const modalMetaLinks = document.getElementById('modalMetaLinks');
+
+    // 1. Fetch and Render Catalog
+    async function loadCatalog() {
+      try {
+        const resp = await fetch('/api/catalog');
+        const data = await resp.json();
+        if (data.status === 'ok') {
+          currentCatalog = data.catalog;
+          seriesCount.textContent = currentCatalog.length;
+          renderCatalog(currentCatalog);
+
+          if (currentCatalog.length > 0) {
+            setupHero(currentCatalog[0]);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load catalog:', err);
+        catalogGrid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-sm text-brand-textMuted">
+            Failed to connect to the Nakama API Gateway. Ensure server is running.
+          </div>
+        `;
+      }
+    }
+
+    // 2. Render Cards in Grid
+    function renderCatalog(items) {
+      if (items.length === 0) {
+        catalogGrid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-sm text-brand-textMuted">
+            No anime files currently found in vault.
+          </div>
+        `;
+        return;
+      }
+
+      catalogGrid.innerHTML = items.map(item => `
+        <div 
+          onclick="openSeries('${encodeURIComponent(item.name)}')" 
+          class="group cursor-pointer bg-brand-surface rounded-xl overflow-hidden border border-brand-border hover:border-brand-accent/50 transition-all duration-200 hover:-translate-y-1 flex flex-col"
+        >
+          <div class="aspect-[3/4] bg-brand-card relative flex items-center justify-center overflow-hidden">
+            <div class="text-xs font-mono text-brand-textMuted uppercase tracking-wider text-center p-3">
+              ${escapeHtml(item.name)}
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-base via-transparent to-transparent opacity-80"></div>
+            <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px] font-mono">
+              <span class="px-1.5 py-0.5 rounded bg-brand-base/80 text-brand-cyan border border-brand-border">
+                ${item.total_episodes} EP${item.total_episodes > 1 ? 'S' : ''}
+              </span>
+              <span class="px-1.5 py-0.5 rounded bg-brand-base/80 text-brand-textMuted border border-brand-border">
+                1080p
+              </span>
+            </div>
+          </div>
+          <div class="p-3">
+            <h3 class="text-xs font-semibold text-white truncate group-hover:text-brand-accent transition-colors">
+              ${escapeHtml(item.name)}
+            </h3>
+            <p class="text-[10px] text-brand-textMuted mt-0.5">
+              ${item.total_downloads} total vault plays
+            </p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 3. Configure Hero Spotlight
+    function setupHero(item) {
+      heroTitle.textContent = item.name;
+      heroDesc.textContent = `Full collection of ${item.name} (${item.total_episodes} releases) available in the decentralized vault. Stream directly with native scrubbing or forward to your Telegram client.`;
+      heroPlayBtn.onclick = () => openSeries(encodeURIComponent(item.name));
+    }
+
+    // 4. Open Series & Populate Player
+    async function openSeries(encodedName) {
+      try {
+        const resp = await fetch(`/api/series/${encodedName}`);
+        const data = await resp.json();
+        if (data.status === 'ok') {
+          activeSeriesData = data;
+          modalTitle.textContent = data.series;
+          
+          // Render Episodes
+          episodeList.innerHTML = data.episodes.map((ep, idx) => `
+            <button 
+              onclick="playEpisode(${ep.id}, '${escapeHtml(ep.file_name)}')" 
+              class="p-2.5 rounded-lg bg-brand-surface border border-brand-border hover:border-brand-accent text-left transition-colors flex flex-col justify-between"
+            >
+              <span class="text-xs font-mono text-brand-cyan">EP ${ep.episode !== null ? ep.episode : (idx + 1)}</span>
+              <span class="text-[10px] text-brand-textMuted font-mono mt-1">${ep.size_human}</span>
+            </button>
+          `).join('');
+
+          // Actions
+          modalMetaLinks.innerHTML = `
+            <a 
+              href="https://t.me/NakamaNetworkbot?start=search_${encodedName}" 
+              target="_blank" 
+              class="px-3 py-1.5 rounded-lg bg-brand-surface border border-brand-border text-xs text-brand-textSecondary hover:text-white transition-colors"
+            >
+              Open in Telegram
+            </a>
+          `;
+
+          // Auto-play first episode
+          if (data.episodes.length > 0) {
+            playEpisode(data.episodes[0].id, data.episodes[0].file_name);
+          }
+
+          theaterModal.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('Failed to open series:', err);
+      }
+    }
+
+    // 5. Play Specific Episode
+    function playEpisode(fileId, fileName) {
+      modalTitle.textContent = fileName;
+      videoSource.src = `/stream/${fileId}`;
+      videoElement.load();
+      videoElement.play().catch(() => {});
+    }
+
+    // 6. Close Modal
+    closeModalBtn.addEventListener('click', () => {
+      videoElement.pause();
+      videoSource.src = '';
+      theaterModal.classList.add('hidden');
+    });
+
+    // 7. Search Input Listener
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderCatalog(currentCatalog);
+        return;
+      }
+      const filtered = currentCatalog.filter(item => item.name.toLowerCase().includes(q));
+      renderCatalog(filtered);
+    });
+
+    // Keyboard Shortcut (Press / to focus search)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+      if (e.key === 'Escape' && !theaterModal.classList.contains('hidden')) {
+        closeModalBtn.click();
+      }
+    });
+
+    // Helper: Escape HTML
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Init
+    loadCatalog();
+  </script>
+</body>
+</html>
