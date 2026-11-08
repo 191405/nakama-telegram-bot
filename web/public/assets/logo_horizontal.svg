@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="brandCrimson" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF2A4B"/>
+      <stop offset="100%" stop-color="#D3081E"/>
+    </linearGradient>
+    <linearGradient id="brandCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="100%" stop-color="#0080FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="200" rx="24" fill="#090B10"/>
+  <rect width="798" height="198" x="1" y="1" rx="23" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="2"/>
+
+  <!-- Iconmark -->
+  <g transform="translate(40, 36) scale(0.25)">
+    <rect width="512" height="512" rx="120" fill="#111622" stroke="rgba(255, 255, 255, 0.1)" stroke-width="8"/>
+    <path d="M128 384 L128 128 L192 128 L192 384 Z" fill="url(#brandCrimson)"/>
+    <path d="M192 128 L320 384 L384 384 L256 128 Z" fill="url(#brandCrimson)"/>
+    <path d="M320 384 L320 128 L384 128 L384 384 Z" fill="url(#brandCrimson)"/>
+    <circle cx="384" cy="128" r="28" fill="url(#brandCyan)"/>
+    <circle cx="384" cy="128" r="14" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Typography -->
+  <text x="200" y="108" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="54" font-weight="800" fill="#FFFFFF" letter-spacing="4">NAKAMA</text>
+  <text x="495" y="108" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="54" font-weight="300" fill="#94A3B8" letter-spacing="4">NETWORK</text>
+  <text x="202" y="142" font-family="'JetBrains Mono', monospace" font-size="14" font-weight="500" fill="#00F0FF" letter-spacing="6">DECENTRALIZED ANIME VAULT</text>
+</svg>
+

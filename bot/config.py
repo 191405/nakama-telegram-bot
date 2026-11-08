@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     # Optional: Google Gemini AI API key for conversational anime concierge
     gemini_api_key: str | None = None
 
+    # Telegram MTProto streaming credentials
+    telegram_api_id: int | None = None
+    telegram_api_hash: str | None = None
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
     @property

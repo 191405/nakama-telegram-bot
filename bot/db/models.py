@@ -93,6 +93,9 @@ class File(Base):
         BigInteger, ForeignKey("users.user_id", ondelete="SET NULL"), nullable=True
     )
     download_count: Mapped[int] = mapped_column(Integer, default=0)
+    channel_message_id: Mapped[int | None] = mapped_column(
+        BigInteger, nullable=True
+    )
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

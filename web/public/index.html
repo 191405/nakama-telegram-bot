@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nakama Network | Anime & Donghua Vault</title>
+  <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ─── Reset & Design Tokens ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: #0A0C10;
+      color: #E2E8F0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+    img { display: block; max-width: 100%; }
+    input { font: inherit; }
+
+    :root {
+      --bg-page: #0A0C10;
+      --bg-surface: #10131A;
+      --bg-card: #151A24;
+      --bg-card-hover: #1C2230;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: #E50914;
+      --crimson: #E50914;
+      --crimson-hover: #F40612;
+      --cyan: #00D8F6;
+      --text-1: #FFFFFF;
+      --text-2: #94A3B8;
+      --text-3: #64748B;
+      --badge-sub: #10B981;
+      --badge-dub: #00D8F6;
+    }
+
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
+    @media (min-width: 768px) { .container { padding: 0 32px; } }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* ─── Navigation Bar ─────────────────────────────────────────────── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 12, 16, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 64px;
+    }
+    .nav-inner {
+      max-width: 1280px; margin: 0 auto; padding: 0 20px;
+      height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    }
+    .nav-brand svg { width: 34px; height: 34px; }
+    .nav-brand-title {
+      font-size: 16px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--text-1); line-height: 1;
+    }
+    .nav-brand-sub {
+      font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--cyan); margin-top: 2px;
+    }
+
+    .nav-search {
+      flex: 1; max-width: 480px; position: relative;
+    }
+    .nav-search input {
+      width: 100%; padding: 9px 36px 9px 38px;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-1); font-size: 13px;
+      transition: border-color 0.15s, background-color 0.15s; outline: none;
+    }
+    .nav-search input::placeholder { color: var(--text-3); }
+    .nav-search input:focus { border-color: var(--crimson); background: var(--bg-card); }
+    .nav-search-icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      width: 15px; height: 15px; color: var(--text-3); pointer-events: none;
+    }
+    .nav-search-kbd {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      padding: 2px 6px; font-size: 10px; color: var(--text-3);
+      background: var(--bg-page); border: 1px solid var(--border); border-radius: 4px;
+    }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .nav-btn {
+      padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+      color: var(--text-2); background: var(--bg-surface); border: 1px solid var(--border);
+      transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .nav-btn:hover { color: var(--text-1); border-color: var(--text-2); }
+    .nav-btn-primary {
+      background: var(--crimson); color: #fff; border-color: var(--crimson);
+    }
+    .nav-btn-primary:hover { background: var(--crimson-hover); border-color: var(--crimson-hover); }
+
+    /* ─── Page View Manager ──────────────────────────────────────────── */
+    .page { display: none; flex: 1; }
+    .page.active { display: block; }
+
+    /* ─── Hero Spotlight Section ─────────────────────────────────────── */
+    .hero-spotlight {
+      position: relative; border-radius: 16px; overflow: hidden;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      margin: 24px 0 36px 0; min-height: 300px; display: flex; align-items: center;
+    }
+    .hero-backdrop {
+      position: absolute; inset: 0; background-size: cover; background-position: center top;
+      opacity: 0.28; filter: blur(2px); transform: scale(1.04);
+    }
+    .hero-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, #0A0C10 0%, rgba(10,12,16,0.92) 50%, rgba(10,12,16,0.4) 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 10; padding: 32px; max-width: 680px;
+    }
+    .hero-badge-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .hero-badge {
+      padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .hero-title { font-size: 28px; font-weight: 800; color: var(--text-1); line-height: 1.2; margin-bottom: 10px; }
+    @media (min-width: 768px) { .hero-title { font-size: 34px; } }
+    .hero-desc { font-size: 13px; line-height: 1.6; color: var(--text-2); margin-bottom: 20px; }
+    .hero-btn-row { display: flex; align-items: center; gap: 10px; }
+
+    /* ─── Section Header ─────────────────────────────────────────────── */
+    .section-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .section-head-title { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-1); }
+    .section-head-count { font-size: 12px; color: var(--text-3); }
+
+    /* ─── Animepahe Latest Releases Feed ─────────────────────────────── */
+    .releases-feed {
+      display: grid; gap: 12px; margin-bottom: 40px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    @media (min-width: 1024px) {
+      .releases-feed { grid-template-columns: repeat(3, 1fr); }
+    }
+    .release-card {
+      display: flex; gap: 14px; padding: 12px; border-radius: 10px;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      transition: border-color 0.15s, background-color 0.15s; cursor: pointer;
+    }
+    .release-card:hover { border-color: var(--crimson); background: var(--bg-card); }
+    .release-card-thumb {
+      width: 68px; height: 96px; flex-shrink: 0; border-radius: 6px;
+      overflow: hidden; background: var(--bg-card); position: relative;
+    }
+    .release-card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .release-card-body {
+      flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .release-card-title {
+      font-size: 13px; font-weight: 600; color: var(--text-1);
+    }
+    .release-card:hover .release-card-title { color: var(--crimson); }
+    .release-card-ep {
+      font-size: 12px; font-weight: 700; color: var(--cyan); margin-top: 3px;
+    }
+    .release-card-foot {
+      display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-3); margin-top: 8px;
+    }
+    .btn-stream-sm {
+      padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 700;
+      background: var(--crimson); color: #fff; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    /* ─── Lucifer Donghua Poster Grid ────────────────────────────────── */
+    .poster-grid {
+      display: grid; gap: 16px; margin-bottom: 48px;
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media (min-width: 640px) { .poster-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 768px) { .poster-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 1024px) { .poster-grid { grid-template-columns: repeat(5, 1fr); } }
+
+    .poster-card {
+      border-radius: 10px; overflow: hidden; background: var(--bg-surface);
+      border: 1px solid var(--border); cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      display: flex; flex-direction: column;
+    }
+    .poster-card:hover {
+      transform: translateY(-4px); border-color: var(--crimson);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .poster-media {
+      aspect-ratio: 2/3; position: relative; overflow: hidden; background: var(--bg-card);
+    }
+    .poster-media img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .poster-card:hover .poster-media img { transform: scale(1.05); }
+    .poster-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(10,12,16,0.92) 0%, transparent 60%);
+    }
+    .poster-tag-top {
+      position: absolute; top: 8px; left: 8px; right: 8px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .tag {
+      padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .tag-status { background: var(--crimson); color: #fff; }
+    .tag-quality { background: rgba(0,0,0,0.75); color: #fff; border: 1px solid var(--border); }
+    .poster-tag-bottom {
+      position: absolute; bottom: 8px; left: 8px; right: 8px;
+      display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700;
+    }
+    .poster-ep { color: var(--cyan); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+    .poster-score { color: #F59E0B; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+
+    .poster-meta { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .poster-title { font-size: 12px; font-weight: 600; color: var(--text-1); line-height: 1.35; }
+    .poster-card:hover .poster-title { color: var(--crimson); }
+    .poster-sub { font-size: 10px; color: var(--text-3); margin-top: 6px; }
+
+    /* ─── Dedicated Series Detail Page ───────────────────────────────── */
+    .series-banner-wrap {
+      position: relative; height: 320px; overflow: hidden; background: var(--bg-surface);
+    }
+    @media (min-width: 768px) { .series-banner-wrap { height: 380px; } }
+    .series-banner-img { width: 100%; height: 100%; object-fit: cover; }
+    .series-banner-mask {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, var(--bg-page) 0%, rgba(10,12,16,0.6) 50%, rgba(10,12,16,0.85) 100%);
+    }
+
+    .series-stage {
+      position: relative; margin-top: -160px; z-index: 10; margin-bottom: 40px;
+    }
+    .series-layout {
+      display: flex; gap: 28px; align-items: flex-start;
+    }
+    @media (max-width: 767px) {
+      .series-layout { flex-direction: column; align-items: center; text-align: center; }
+    }
+    .series-cover-box {
+      width: 200px; flex-shrink: 0; border-radius: 12px; overflow: hidden;
+      border: 2px solid var(--border); box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+      background: var(--bg-card);
+    }
+    .series-cover-box img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+
+    .series-info { flex: 1; padding-top: 10px; }
+    .series-heading { font-size: 26px; font-weight: 800; color: var(--text-1); line-height: 1.2; }
+    @media (min-width: 768px) { .series-heading { font-size: 32px; } }
+    .series-subheading { font-size: 13px; color: var(--text-3); margin-top: 4px; font-weight: 500; }
+
+    .series-meta-bar {
+      display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; align-items: center;
+    }
+    @media (max-width: 767px) { .series-meta-bar { justify-content: center; } }
+    .meta-chip {
+      padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      background: rgba(255, 255, 255, 0.05); color: var(--text-2); border: 1px solid var(--border);
+    }
+    .meta-chip-cyan { color: var(--cyan); border-color: rgba(0, 216, 246, 0.3); background: rgba(0, 216, 246, 0.08); }
+    .meta-chip-score { color: #F59E0B; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.08); }
+
+    .series-synopsis {
+      font-size: 13px; line-height: 1.7; color: var(--text-2); max-width: 720px; margin-bottom: 24px;
+    }
+
+    .series-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+    @media (max-width: 767px) { .series-buttons { justify-content: center; } }
+
+    /* ─── Episode Selector Hub (Lucifer Donghua style) ───────────────── */
+    .episodes-hub {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px; margin-bottom: 48px;
+    }
+    .episodes-hub-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    }
+    .hub-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-1); }
+
+    .pill-grid {
+      display: grid; gap: 8px; margin-bottom: 24px;
+      grid-template-columns: repeat(6, 1fr);
+    }
+    @media (min-width: 640px) { .pill-grid { grid-template-columns: repeat(8, 1fr); } }
+    @media (min-width: 768px) { .pill-grid { grid-template-columns: repeat(12, 1fr); } }
+    @media (min-width: 1024px) { .pill-grid { grid-template-columns: repeat(16, 1fr); } }
+
+    .ep-pill {
+      padding: 10px 4px; border-radius: 6px; font-size: 12px; font-weight: 700;
+      text-align: center; background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-1); transition: all 0.15s;
+    }
+    .ep-pill:hover { border-color: var(--crimson); color: #fff; background: var(--bg-card-hover); }
+    .ep-pill.active { background: var(--crimson); border-color: var(--crimson); color: #fff; }
+
+    /* Detailed Episode Rows (Animepahe style) */
+    .ep-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 12px 16px; border-radius: 8px; background: var(--bg-card);
+      border: 1px solid var(--border); margin-bottom: 6px; transition: all 0.15s;
+    }
+    .ep-row:hover { background: var(--bg-card-hover); border-color: rgba(229, 9, 20, 0.4); }
+    .ep-row-left { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1; }
+    .ep-badge-num {
+      width: 44px; text-align: center; font-size: 12px; font-weight: 800;
+      color: var(--cyan); flex-shrink: 0;
+    }
+    .ep-title-clean { font-size: 13px; font-weight: 500; color: var(--text-1); min-width: 0; }
+    .ep-row-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .ep-filesize { font-size: 11px; color: var(--text-3); }
+
+    /* ─── Watch Page ─────────────────────────────────────────────────── */
+    .watch-stage { margin: 24px 0 48px 0; }
+    .watch-player-box {
+      width: 100%; aspect-ratio: 16/9; background: #000;
+      border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+    }
+    .watch-player-box video { width: 100%; height: 100%; outline: none; }
+    
+    .watch-controls-bar {
+      margin-top: 16px; padding: 14px 20px; border-radius: 10px;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .watch-nav-btns { display: flex; align-items: center; gap: 8px; }
+
+    /* ─── Footer ─────────────────────────────────────────────────────── */
+    .footer {
+      margin-top: auto; border-top: 1px solid var(--border);
+      padding: 28px 20px; text-align: center; font-size: 12px; color: var(--text-3);
+      background: var(--bg-surface);
+    }
+
+    .empty-banner {
+      padding: 60px 20px; text-align: center; color: var(--text-3); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Top Navigation ────────────────────────────────────────────────── -->
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="#/" class="nav-brand">
+        <svg viewBox="0 0 512 512" fill="none">
+          <rect width="512" height="512" rx="120" fill="#151A24" stroke="rgba(255, 255, 255, 0.1)" stroke-width="8"/>
+          <path d="M128 384V128h64v256z" fill="#E50914"/>
+          <path d="M192 128l128 256h64L256 128z" fill="#E50914"/>
+          <path d="M320 384V128h64v256z" fill="#E50914"/>
+          <circle cx="384" cy="128" r="28" fill="#00D8F6"/>
+        </svg>
+        <div class="flex flex-col">
+          <span class="nav-brand-title">Nakama</span>
+          <span class="nav-brand-sub">Network</span>
+        </div>
+      </a>
+
+      <div class="nav-search">
+        <svg class="nav-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input id="searchInput" type="text" placeholder="Search anime titles...">
+        <span class="nav-search-kbd mono">/</span>
+      </div>
+
+      <div class="nav-actions">
+        <a href="#/" class="nav-btn">Browse Vault</a>
+        <a href="https://t.me/NakamaNetworkbot" target="_blank" rel="noopener" class="nav-btn nav-btn-primary">
+          Telegram Vault
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── PAGE 1: HOME CATALOG ─────────────────────────────────────────── -->
+  <main id="page-home" class="page active">
+    <div class="container">
+
+      <!-- Hero Spotlight -->
+      <section id="heroSpotlight" class="hero-spotlight">
+        <div id="heroBackdrop" class="hero-backdrop"></div>
+        <div class="hero-gradient"></div>
+        <div class="hero-content">
+          <div class="hero-badge-row">
+            <span class="hero-badge tag-status" id="heroStatus">ONGOING</span>
+            <span class="hero-badge tag-quality mono" id="heroQuality">1080P FHD</span>
+            <span class="hero-badge mono" style="background:rgba(0,216,246,0.15); color:var(--cyan);" id="heroScore">8.8 SCORE</span>
+          </div>
+          <h1 id="heroTitle" class="hero-title">Loading Featured Release...</h1>
+          <p id="heroDesc" class="hero-desc line-clamp-3">Loading release description from the media vault...</p>
+          <div class="hero-btn-row">
+            <button id="heroWatchBtn" class="nav-btn nav-btn-primary" style="padding:10px 20px; font-size:13px;">
+              View Series
+            </button>
+            <a id="heroTgBtn" href="#" target="_blank" class="nav-btn" style="padding:10px 18px; font-size:13px;">
+              Download Batch
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Complete Anime Vault (Poster Grid) -->
+      <section>
+        <div class="section-head">
+          <span class="section-head-title">Anime Vault</span>
+          <span id="seriesCount" class="section-head-count mono">0 series</span>
+        </div>
+        <div id="catalogGrid" class="poster-grid"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ─── PAGE 2: DEDICATED SERIES DETAIL ──────────────────────────────── -->
+  <main id="page-series" class="page">
+    <div class="series-banner-wrap">
+      <img id="seriesBannerImg" class="series-banner-img" src="" alt="">
+      <div class="series-banner-mask"></div>
+    </div>
+
+    <div class="container series-stage">
+      <div class="series-layout">
+        <div class="series-cover-box">
+          <img id="seriesCoverImg" src="" alt="">
+        </div>
+        <div class="series-info">
+          <h1 id="seriesTitle" class="series-heading">Series Title</h1>
+          <div id="seriesSubTitle" class="series-subheading">English / Romaji Title</div>
+          <div id="seriesMetaBar" class="series-meta-bar"></div>
+          <p id="seriesSynopsis" class="series-synopsis">Loading synopsis...</p>
+          <div class="series-buttons">
+            <button id="playFirstBtn" class="nav-btn nav-btn-primary" style="padding:10px 24px;">
+              Play Episode 1
+            </button>
+            <a id="batchTgLink" href="#" target="_blank" class="nav-btn" style="padding:10px 20px;">
+              Get Batch on Telegram
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Episode Selection Hub -->
+      <div class="episodes-hub">
+        <div class="episodes-hub-header">
+          <span class="hub-title">Select Episode</span>
+          <span id="hubEpCount" class="section-head-count mono">0 episodes</span>
+        </div>
+        
+        <!-- Lucifer Donghua style numbered pill grid -->
+        <div id="hubPillsGrid" class="pill-grid"></div>
+
+        <!-- Animepahe style detailed episode list -->
+        <div id="hubEpisodesList"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ─── PAGE 3: WATCH PLAYER ─────────────────────────────────────────── -->
+  <main id="page-watch" class="page">
+    <div class="container watch-stage">
+      <div class="watch-player-box">
+        <video id="playerVideo" controls preload="metadata">
+          <source id="playerSource" src="" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="watch-controls-bar">
+        <div>
+          <h2 id="playerEpTitle" class="text-sm font-bold text-white truncate max-w-lg">Playing Episode</h2>
+          <div id="playerSeriesBack" class="text-xs text-cyan-400 mt-1 cursor-pointer"></div>
+        </div>
+
+        <div class="watch-nav-btns">
+          <button id="playerPrevBtn" class="nav-btn" disabled>Previous Episode</button>
+          <button id="playerNextBtn" class="nav-btn" disabled>Next Episode</button>
+          <a id="playerTgDownload" href="#" target="_blank" class="nav-btn nav-btn-primary">
+            Download Episode
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick episode switcher drawer -->
+      <div class="episodes-hub" style="margin-top:24px;">
+        <div class="episodes-hub-header">
+          <span class="hub-title">Jump to Episode</span>
+        </div>
+        <div id="watchQuickPills" class="pill-grid"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ─── Footer ────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="container flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>NAKAMA NETWORK &bull; Decentralized Anime Media Platform</div>
+      <div>Indexed from Telegram Storage &bull; Metadata powered by AniList</div>
+    </div>
+  </footer>
+
+  <!-- ─── Client Router & Application Logic ─────────────────────────────── -->
+  <script>
+    let catalog = [];
+    let latestReleases = [];
+    let currentSeriesData = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    // --- Routing System ---
+    function navigate(hash) {
+      if (location.hash !== hash) location.hash = hash;
+    }
+
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const target = $(pageId);
+      if (target) target.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    async function handleRoute() {
+      const hash = location.hash || '#/';
+      if (hash === '#/' || hash === '#') {
+        showPage('page-home');
+        if (catalog.length === 0) await loadCatalog();
+      } else if (hash.startsWith('#/anime/')) {
+        const seriesName = decodeURIComponent(hash.replace('#/anime/', ''));
+        showPage('page-series');
+        await loadSeriesDetail(seriesName);
+      } else if (hash.startsWith('#/watch/')) {
+        const parts = hash.replace('#/watch/', '').split('/');
+        const fileId = parseInt(parts[0]);
+        const seriesName = parts[1] ? decodeURIComponent(parts[1]) : '';
+        showPage('page-watch');
+        startPlayback(fileId, seriesName);
+      } else {
+        showPage('page-home');
+      }
+    }
+
+    window.addEventListener('hashchange', handleRoute);
+    window.addEventListener('load', handleRoute);
+
+    // --- Catalog Loading ---
+    async function loadCatalog() {
+      try {
+        const res = await fetch('/api/catalog');
+        const data = await res.json();
+        if (data.status === 'ok') {
+          catalog = data.catalog;
+          latestReleases = data.latest_releases || [];
+          renderHome();
+        }
+      } catch (err) {
+        $('catalogGrid').innerHTML = '<div class="empty-banner">Unable to load media catalog.</div>';
+      }
+    }
+
+    function renderHome() {
+      $('seriesCount').textContent = `${catalog.length} series`;
+
+      // 1. Hero Spotlight (top anime)
+      if (catalog.length > 0) {
+        const hero = catalog[0];
+        if (hero.banner_image || hero.cover_image) {
+          $('heroBackdrop').style.backgroundImage = `url('${hero.banner_image || hero.cover_image}')`;
+        }
+        $('heroTitle').textContent = hero.display_title || hero.name;
+        $('heroDesc').textContent = hero.description || `Full high-bitrate archive of ${hero.name} with ${hero.total_episodes} episodes available in vault.`;
+        $('heroStatus').textContent = hero.status;
+        $('heroScore').textContent = hero.score ? `${(hero.score / 10).toFixed(1)} SCORE` : 'HIGH DEFINITION';
+        $('heroWatchBtn').onclick = () => navigate(`#/anime/${encodeURIComponent(hero.name)}`);
+        $('heroTgBtn').href = `https://t.me/NakamaNetworkbot?start=search_${encodeURIComponent(hero.name)}`;
+      }
+
+      // Complete Anime Vault Poster Grid
+      $('catalogGrid').innerHTML = catalog.map(item => `
+        <div class="poster-card" onclick="navigate('#/anime/${encodeURIComponent(item.name)}')">
+          <div class="poster-media">
+            ${item.cover_image ? `<img src="${item.cover_image}" alt="${esc(item.display_title)}" loading="lazy">` : `<div class="p-4 text-xs mono text-slate-500">${esc(item.name)}</div>`}
+            <div class="poster-overlay"></div>
+            <div class="poster-tag-top">
+              <span class="tag tag-status">${item.status}</span>
+              <span class="tag tag-quality mono">1080p</span>
+            </div>
+            <div class="poster-tag-bottom">
+              <span class="poster-ep mono">EP ${item.total_episodes}</span>
+              ${item.score ? `<span class="poster-score mono">&#9733; ${(item.score/10).toFixed(1)}</span>` : ''}
+            </div>
+          </div>
+          <div class="poster-meta">
+            <div class="poster-title line-clamp-2">${esc(item.display_title || item.name)}</div>
+            <div class="poster-sub mono">${item.year ? item.year : 'HD Vault'} &bull; ${item.genres.length ? item.genres[0] : 'Anime'}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- Series Detail Page ---
+    async function loadSeriesDetail(seriesName) {
+      try {
+        const res = await fetch(`/api/series/${encodeURIComponent(seriesName)}`);
+        const data = await res.json();
+        if (!data || (!data.episodes && data.status !== 'ok')) {
+          $('seriesTitle').textContent = 'Series not found';
+          return;
+        }
+        currentSeriesData = data;
+
+        // Banner and Poster
+        $('seriesBannerImg').src = data.banner_image || data.cover_image || '';
+        $('seriesCoverImg').src = data.cover_image || '';
+
+        // Title and description
+        $('seriesTitle').textContent = data.display_title || data.series;
+        $('seriesSubTitle').textContent = data.series;
+        $('seriesSynopsis').textContent = data.description || 'No synopsis provided for this anime.';
+
+        // Meta chips
+        const chips = [];
+        if (data.year) chips.push(`<span class="meta-chip mono">${data.year}</span>`);
+        if (data.score) chips.push(`<span class="meta-chip meta-chip-score mono">&#9733; ${(data.score/10).toFixed(1)} / 10</span>`);
+        const airing = data.airing_status || (data.status !== 'ok' ? data.status : null) || 'Ongoing';
+        chips.push(`<span class="meta-chip meta-chip-cyan">${esc(airing)}</span>`);
+        (data.genres || []).forEach(g => chips.push(`<span class="meta-chip">${esc(g)}</span>`));
+        $('seriesMetaBar').innerHTML = chips.join('');
+
+        // Action Buttons
+        if (data.episodes.length > 0) {
+          $('playFirstBtn').style.display = '';
+          $('playFirstBtn').onclick = () => navigate(`#/watch/${data.episodes[0].id}/${encodeURIComponent(data.series)}`);
+        } else {
+          $('playFirstBtn').style.display = 'none';
+        }
+        $('batchTgLink').href = `https://t.me/NakamaNetworkbot?start=search_${encodeURIComponent(data.series)}`;
+
+        // Episode counts
+        $('hubEpCount').textContent = `${data.total_episodes} episodes in vault`;
+
+        // 1. Numbered Pill Grid (Lucifer Donghua style)
+        $('hubPillsGrid').innerHTML = data.episodes.map((ep, idx) => `
+          <button 
+            onclick="navigate('#/watch/${ep.id}/${encodeURIComponent(data.series)}')" 
+            class="ep-pill mono"
+          >
+            ${ep.episode}
+          </button>
+        `).join('');
+
+        // 2. Detailed Episode Rows (Animepahe style)
+        $('hubEpisodesList').innerHTML = data.episodes.map(ep => `
+          <div class="ep-row" onclick="navigate('#/watch/${ep.id}/${encodeURIComponent(data.series)}')">
+            <div class="ep-row-left">
+              <span class="ep-badge-num mono">EP ${ep.episode}</span>
+              <span class="ep-title-clean truncate">${esc(ep.file_name)}</span>
+            </div>
+            <div class="ep-row-right">
+              <span class="ep-filesize mono">${ep.size}</span>
+              <button class="nav-btn nav-btn-primary" style="padding:4px 12px; font-size:11px;" onclick="event.stopPropagation(); navigate('#/watch/${ep.id}/${encodeURIComponent(data.series)}')">
+                Play
+              </button>
+              <a href="https://t.me/NakamaNetworkbot?start=file_${ep.id}" target="_blank" class="nav-btn" style="padding:4px 10px; font-size:11px;" onclick="event.stopPropagation()">
+                Download
+              </a>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        $('seriesTitle').textContent = 'Error loading anime series';
+      }
+    }
+
+    // --- Watch Player Page ---
+    async function startPlayback(fileId, seriesName) {
+      $('playerVideo').src = `/stream/${fileId}`;
+      if ($('playerSource')) $('playerSource').src = `/stream/${fileId}`;
+      $('playerVideo').load();
+      $('playerVideo').play().catch((e) => {
+        console.log('Playback notice:', e);
+      });
+      $('playerTgDownload').href = `https://t.me/NakamaNetworkbot?start=file_${fileId}`;
+
+      if (!currentSeriesData || currentSeriesData.series.toLowerCase() !== seriesName.toLowerCase()) {
+        try {
+          const res = await fetch(`/api/series/${encodeURIComponent(seriesName)}`);
+          currentSeriesData = await res.json();
+        } catch (e) {}
+      }
+
+      if (currentSeriesData && currentSeriesData.episodes) {
+        const epIdx = currentSeriesData.episodes.findIndex(e => e.id === fileId);
+        if (epIdx >= 0) {
+          const ep = currentSeriesData.episodes[epIdx];
+          $('playerEpTitle').textContent = `${currentSeriesData.display_title || currentSeriesData.series} - Episode ${ep.episode}`;
+          $('playerSeriesBack').innerHTML = `&larr; Back to ${esc(currentSeriesData.display_title || currentSeriesData.series)}`;
+          $('playerSeriesBack').onclick = () => navigate(`#/anime/${encodeURIComponent(currentSeriesData.series)}`);
+
+          // Prev / Next button states
+          $('playerPrevBtn').disabled = epIdx === 0;
+          $('playerNextBtn').disabled = epIdx >= currentSeriesData.episodes.length - 1;
+          $('playerPrevBtn').onclick = () => {
+            if (epIdx > 0) navigate(`#/watch/${currentSeriesData.episodes[epIdx-1].id}/${encodeURIComponent(currentSeriesData.series)}`);
+          };
+          $('playerNextBtn').onclick = () => {
+            if (epIdx < currentSeriesData.episodes.length - 1) navigate(`#/watch/${currentSeriesData.episodes[epIdx+1].id}/${encodeURIComponent(currentSeriesData.series)}`);
+          };
+
+          // Quick pill switcher
+          $('watchQuickPills').innerHTML = currentSeriesData.episodes.map(e => `
+            <button 
+              onclick="navigate('#/watch/${e.id}/${encodeURIComponent(currentSeriesData.series)}')" 
+              class="ep-pill mono ${e.id === fileId ? 'active' : ''}"
+            >
+              ${e.episode}
+            </button>
+          `).join('');
+        }
+      }
+    }
+
+    // --- Instant Search ---
+    $('searchInput').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderHome();
+        return;
+      }
+      const matched = catalog.filter(c =>
+        c.name.toLowerCase().includes(q) || (c.display_title && c.display_title.toLowerCase().includes(q))
+      );
+      $('catalogGrid').innerHTML = matched.length ? matched.map(item => `
+        <div class="poster-card" onclick="navigate('#/anime/${encodeURIComponent(item.name)}')">
+          <div class="poster-media">
+            ${item.cover_image ? `<img src="${item.cover_image}" alt="${esc(item.display_title)}" loading="lazy">` : ''}
+            <div class="poster-overlay"></div>
+          </div>
+          <div class="poster-meta">
+            <div class="poster-title truncate">${esc(item.display_title || item.name)}</div>
+            <div class="poster-sub mono">${item.total_episodes} Episodes</div>
+          </div>
+        </div>
+      `).join('') : '<div class="empty-banner col-span-full">No matching anime found.</div>';
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== $('searchInput')) {
+        e.preventDefault();
+        $('searchInput').focus();
+      }
+      if (e.key === 'Escape') {
+        $('searchInput').blur();
+        $('searchInput').value = '';
+        navigate('#/');
+      }
+    });
+
+    function esc(s) {
+      if (!s) return '';
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+  </script>
+</body>
+</html>
