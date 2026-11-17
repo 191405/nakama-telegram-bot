@@ -26,7 +26,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [3/5] Setting up persistent storage volume...
-flyctl volumes create nakama_data --region iad --size 1 --yes 2>nul || echo Volume already exists or created.
+flyctl volumes create nakama_data --size 1 --yes 2>nul || echo Volume already exists or created.
 
 echo.
 echo [4/5] Setting secure production secrets...
