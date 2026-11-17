@@ -65,7 +65,7 @@ async def handle_storage_channel_post(message: Message, session: AsyncSession) -
     uploader_id = message.sender_chat.id if message.sender_chat else (settings.admin_id_list[0] if settings.admin_id_list else 0)
 
     try:
-        # Save file to shared database
+        # Save file to shared database with its storage channel message ID
         f = await queries.save_file(
             session=session,
             file_name=original_name,
@@ -76,6 +76,7 @@ async def handle_storage_channel_post(message: Message, session: AsyncSession) -
             uploaded_by=uploader_id,
             category_id=None,
             caption=caption,
+            channel_message_id=message.message_id,
         )
 
         # Auto-categorize using AniList metadata

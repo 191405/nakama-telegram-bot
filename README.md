@@ -1,120 +1,150 @@
-# 📁 Telegram File Bot
+# Nakama Network — Telegram Anime Bot & Web Streaming Platform
 
-A production-grade Telegram bot for storing and sharing files. Users can search, browse by category, and use inline mode to share files from any chat. Admins can upload, manage categories, broadcast, and moderate users.
+A production-grade anime archiving and web streaming platform backed by Telegram's cloud storage. Includes an automated Telegram bot, an AniList-enriched web streaming platform (inspired by Animepahe & Lucifer Donghua), and an MTProto byte-range streaming gateway capable of playing high-bitrate anime releases directly in browser HTML5 players.
 
-## Features
+---
 
-### For Users
-- 🔍 **Search** — `/search <query>` to find files
-- 📂 **Browse** — `/browse` to explore categories
-- 🆕 **Latest** — `/latest` for recent uploads
-- 🔥 **Popular** — `/popular` for most-downloaded files
-- 💬 **Inline Mode** — Type `@botusername query` in any chat
+## 🏗️ Architecture Overview
 
-### For Admins
-- 📤 **Upload** — `/upload` (reply to a file or send after)
-- 📦 **Batch Upload** — `/batch` to upload many files at once
-- 📂 **Categories** — `/addcategory` to organize files
-- 🗑️ **Delete** — `/delfile <id>` to remove files
-- 📊 **Stats** — `/stats` for usage statistics
-- 📣 **Broadcast** — `/broadcast <message>` to message all users
-- 🚫 **Ban/Unban** — `/ban <user_id>` / `/unban <user_id>`
+```
+                          ┌───────────────────────────┐
+                          │    Browser Web Client     │
+                          │   (Animepahe / Lucifer)   │
+                          └─────────────┬─────────────┘
+                                        │
+                         HTTP REST / 206 Byte-Range
+                                        │
+                                        ▼
+┌───────────────────────┐     ┌───────────────────────────┐     ┌───────────────────────┐
+│     Telegram Bot      │     │    Web Streaming Gateway  │     │   Private Telegram    │
+│    (aiogram 3.x)      │◄───►│       (aiohttp 3.x)       │◄───►│    Storage Channel    │
+│  User & Admin Arena   │     │  Telethon MTProto Client  │     │  (Unlimited Storage)  │
+└──────────┬────────────┘     └─────────────┬─────────────┘     └───────────────────────┘
+           │                                │
+           │      Shared Database Layer     │
+           └────────────────►◄──────────────┘
+                    SQLite WAL / PostgreSQL
+```
 
-## Quick Start
+### Core Components
+1. **Web Streaming Gateway (`server/app.py`)**:
+   - High-performance `aiohttp` server exposing REST endpoints (`/api/catalog`, `/api/series/{name}`).
+   - **Telegram MTProto Streaming Engine**: Implements HTTP 206 Partial Content range streaming via Telethon. Bypasses the 20MB bot API barrier, streaming 100MB–2GB files chunk-by-chunk directly into browser memory.
+   - Hosts the single-page application (SPA) with zero external frameworks.
+2. **Telegram Bot (`bot/`)**:
+   - `aiogram 3.x` long-polling bot for search, anime discovery, admin uploads, and community interactions.
+   - Intercepts files in the storage channel and automatically indexes them into the database.
+3. **Database Layer (`bot/db/`)**:
+   - Asynchronous SQLAlchemy 2.0 with automated migrations.
+   - Out-of-the-box support for **SQLite with WAL mode** (Write-Ahead Logging + busy timeouts for concurrent bot/web reads and writes) or **PostgreSQL 16**.
+4. **Unified Runner (`scripts/run_all.py`)**:
+   - Production process supervisor that boots and manages both the Web Gateway and Telegram Bot concurrently inside a single container or server.
 
-### 1. Create a Bot
+---
 
-1. Open Telegram and search for [@BotFather](https://t.me/BotFather)
-2. Send `/newbot` and follow the prompts
-3. Copy the **bot token** you receive
-4. **Enable inline mode:** Send `/setinline` to BotFather, select your bot, and set a placeholder text
+## 🚀 Quick Start
 
-### 2. Configure
+### 1. Prerequisites
+- Python 3.11+
+- Telegram Bot Token from [@BotFather](https://t.me/BotFather)
+- Telegram MTProto API credentials (`API_ID` and `API_HASH`) from [my.telegram.org](https://my.telegram.org)
+- A private Telegram channel with your bot added as Administrator
 
+### 2. Configure Environment
+
+Copy the example environment file:
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
+Populate `.env` with your values:
 ```env
-BOT_TOKEN=your-token-from-botfather
-ADMIN_IDS=your-telegram-user-id
+BOT_TOKEN=8979709590:AA...
+ADMIN_IDS=123456789
+STORAGE_CHANNEL=-1001985886914
+TELEGRAM_API_ID=30072804
+TELEGRAM_API_HASH=b504faaf7cb9e69748eb705834e1130f
+DATABASE_URL=sqlite+aiosqlite:///filebot.db
+HOST=0.0.0.0
+PORT=8080
 ```
 
-> 💡 **Find your Telegram user ID:** Message [@userinfobot](https://t.me/userinfobot) on Telegram.
+### 3. Local Development
 
-### 3. Run with Docker (Recommended)
-
+Run both services together:
 ```bash
-docker-compose up -d
+# Windows
+.venv\Scripts\python.exe scripts/run_all.py
+
+# Linux / macOS
+python3 scripts/run_all.py
 ```
 
-This starts PostgreSQL + the bot automatically.
-
-### 4. Run Locally (Alternative)
-
+Or run services individually:
 ```bash
-# Install PostgreSQL and create a database first
-# Then:
+# Run web gateway on http://localhost:8080
+python -m server.app
 
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # Linux/Mac
-
-pip install -r requirements.txt
+# In another terminal: Run Telegram bot
 python -m bot
 ```
 
-## Project Structure
+Open `http://localhost:8080` in your browser.
 
-```
-TG bot/
-├── bot/
-│   ├── __main__.py        # Entry point
-│   ├── config.py          # Settings from .env
-│   ├── db/
-│   │   ├── engine.py      # Async SQLAlchemy engine
-│   │   ├── models.py      # ORM models
-│   │   └── queries.py     # Database queries
-│   ├── handlers/
-│   │   ├── user.py        # /start, /help, menus
-│   │   ├── search.py      # /search, /browse, /latest, /popular
-│   │   ├── admin.py       # Admin commands
-│   │   ├── callbacks.py   # File detail & download
-│   │   └── inline.py      # Inline query handler
-│   ├── keyboards/
-│   │   └── inline.py      # Inline keyboard builders
-│   ├── middlewares/
-│   │   ├── db.py          # DB session injection
-│   │   ├── auth.py        # Admin authentication
-│   │   └── throttle.py    # Rate limiting
-│   └── utils/
-│       ├── formatting.py  # Message formatters
-│       └── pagination.py  # Pagination helper
-├── .env.example
-├── requirements.txt
-├── Dockerfile
-├── docker-compose.yml
-└── README.md
+---
+
+## 🐳 Production Deployment
+
+### Option A: Docker Compose (Recommended for VPS / Dedicated Servers)
+
+Run the full platform with a persistent volume:
+```bash
+docker compose up -d
 ```
 
-## Optional: Force Channel Subscription
+- Web Gateway is mapped to `http://YOUR_SERVER_IP:8080`.
+- SQLite database and Telethon session files are persisted in the `nakama_data` volume.
 
-To require users to join your channel before using the bot:
+### Option B: Fly.io Cloud Deployment (24/7 Serverless Container)
 
-1. Create a Telegram channel
-2. Add the bot as an **admin** in the channel
-3. Set in `.env`:
-   ```env
-   FORCE_SUB_CHANNEL=@yourchannel
+1. Install Fly CLI: [fly.io/docs/hands-on/install-flyctl/](https://fly.io/docs/hands-on/install-flyctl/)
+2. Authenticate: `flyctl auth login`
+3. Create the persistent volume (1GB):
+   ```bash
+   flyctl volumes create nakama_data --region iad --size 1
+   ```
+4. Set production secrets:
+   ```bash
+   flyctl secrets set \
+     BOT_TOKEN="your_token" \
+     ADMIN_IDS="your_admin_id" \
+     STORAGE_CHANNEL="-1001985886914" \
+     TELEGRAM_API_ID="your_api_id" \
+     TELEGRAM_API_HASH="your_api_hash"
+   ```
+5. Deploy:
+   ```bash
+   flyctl deploy
    ```
 
-## Tech Stack
+Windows users can also run:
+```bat
+deploy_fly.bat
+```
 
-| Component | Technology |
-|-----------|-----------|
-| Bot Framework | aiogram 3.x |
-| Database | PostgreSQL 16 |
-| ORM | SQLAlchemy 2.0 (async) |
-| Config | pydantic-settings |
-| Container | Docker + docker-compose |
+---
+
+## 🛠️ Operational Maintenance & Vault Sync
+
+When adding legacy files or existing database records to the storage channel:
+```bash
+python scripts/sync_vault.py
+```
+This script iterates through all records in `filebot.db` that lack a `channel_message_id`, forwards them to the storage channel, and stores their persistent message references.
+
+---
+
+## 🔒 Security Best Practices
+- Keep `.env`, `filebot.db`, and `*.session` files strictly out of version control (enforced in `.gitignore`).
+- Store MTProto session files on persistent volumes in production (`/data/streamer_bot.session`).
+- Never run with hardcoded secrets or bypass Git secret scanning.

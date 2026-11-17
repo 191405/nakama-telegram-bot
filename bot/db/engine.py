@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from sqlalchemy import event, text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -40,6 +41,16 @@ engine = create_async_engine(
     **engine_kwargs,
 )
 
+# Concurrency & Performance: Enable WAL mode and busy timeout for SQLite
+if settings.database_url.startswith("sqlite"):
+    @event.listens_for(engine.sync_engine, "connect")
+    def _set_sqlite_pragmas(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout=10000")
+        cursor.close()
+
 async_session = async_sessionmaker(
     engine,
     class_=AsyncSession,
@@ -50,11 +61,10 @@ async_session = async_sessionmaker(
 async def init_db() -> None:
     """Create all tables and perform safe schema migrations."""
     from bot.db.models import Base
-    from sqlalchemy import text
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        # Safe column addition for users table
+        # Safe column addition for users and files tables
         try:
             if settings.database_url.startswith("sqlite"):
                 cols_res = await conn.execute(text("PRAGMA table_info(users)"))
@@ -67,12 +77,22 @@ async def init_db() -> None:
                     await conn.execute(
                         text("ALTER TABLE users ADD COLUMN xp INTEGER DEFAULT 0")
                     )
+                # Ensure files table has channel_message_id
+                f_cols = await conn.execute(text("PRAGMA table_info(files)"))
+                f_existing = {row[1] for row in f_cols.fetchall()}
+                if "channel_message_id" not in f_existing:
+                    await conn.execute(
+                        text("ALTER TABLE files ADD COLUMN channel_message_id INTEGER")
+                    )
             else:
                 await conn.execute(
                     text("ALTER TABLE users ADD COLUMN IF NOT EXISTS persona VARCHAR(50) DEFAULT 'nakama'")
                 )
                 await conn.execute(
                     text("ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0")
+                )
+                await conn.execute(
+                    text("ALTER TABLE files ADD COLUMN IF NOT EXISTS channel_message_id BIGINT")
                 )
         except Exception:
             pass

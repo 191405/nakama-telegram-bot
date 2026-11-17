@@ -30,8 +30,8 @@ flyctl volumes create nakama_data --region iad --size 1 --yes 2>nul || echo Volu
 
 echo.
 echo [4/5] Setting secure production secrets...
-echo Please ensure your secrets are configured using:
-echo   flyctl secrets set BOT_TOKEN="your_token" ADMIN_IDS="your_admin_id"
+echo Please ensure your production secrets are configured using:
+echo   flyctl secrets set BOT_TOKEN="..." ADMIN_IDS="..." TELEGRAM_API_ID="..." TELEGRAM_API_HASH="..." STORAGE_CHANNEL="..."
 echo.
 
 echo.

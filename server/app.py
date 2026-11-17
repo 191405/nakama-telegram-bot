@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -39,12 +40,23 @@ WEB_ROOT = Path(__file__).parent.parent / "web" / "public"
 
 
 def parse_byte_range(range_header: str | None, total_size: int) -> tuple[int, int]:
-    """Parse HTTP Range header into valid (start, end) byte offsets."""
+    """Parse HTTP Range header into valid (start, end) byte offsets (RFC 7233)."""
     if not range_header or not range_header.startswith("bytes="):
         return 0, total_size - 1
 
     range_val = range_header.replace("bytes=", "").strip()
     parts = range_val.split("-")
+
+    # Suffix byte range: e.g. bytes=-500 (last 500 bytes)
+    if not parts[0] and len(parts) > 1 and parts[1]:
+        try:
+            suffix_len = int(parts[1])
+            start = max(0, total_size - suffix_len)
+            end = total_size - 1
+            return start, end
+        except ValueError:
+            return 0, total_size - 1
+
     start = int(parts[0]) if parts[0] else 0
     end = int(parts[1]) if len(parts) > 1 and parts[1] else total_size - 1
 
@@ -318,6 +330,8 @@ async def handle_stream(request: web.Request) -> web.StreamResponse:
             "Accept-Ranges": "bytes",
             "Content-Range": f"bytes {start}-{end}/{total_size}",
             "Content-Length": str(chunk_length),
+            "Content-Disposition": f'inline; filename="{Path(f.file_name).name}"',
+            "Access-Control-Allow-Origin": "*",
             "Cache-Control": "public, max-age=86400",
         },
     )
@@ -364,8 +378,11 @@ async def on_startup(app: web.Application) -> None:
 
     if settings.telegram_api_id and settings.telegram_api_hash and settings.bot_token:
         try:
-            logger.info("Connecting Telethon MTProto client for media streaming...")
-            client = TelegramClient("streamer_bot", settings.telegram_api_id, settings.telegram_api_hash)
+            session_name = os.getenv("TELEGRAM_SESSION_PATH", "streamer_bot")
+            if session_name == "streamer_bot" and Path("/data").is_dir():
+                session_name = "/data/streamer_bot"
+            logger.info("Connecting Telethon MTProto client for media streaming (session: %s)...", session_name)
+            client = TelegramClient(session_name, settings.telegram_api_id, settings.telegram_api_hash)
             await client.start(bot_token=settings.bot_token)
             app["telethon_client"] = client
 
@@ -415,8 +432,10 @@ def create_app() -> web.Application:
 
 def main() -> None:
     app = create_app()
-    logger.info("Nakama Network streaming server starting on http://127.0.0.1:8080")
-    web.run_app(app, host="127.0.0.1", port=8080, print=None)
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8080"))
+    logger.info("Nakama Network streaming server starting on http://%s:%s", host, port)
+    web.run_app(app, host=host, port=port, print=None)
 
 
 if __name__ == "__main__":

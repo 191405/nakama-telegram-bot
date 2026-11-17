@@ -124,6 +124,7 @@ async def save_file(
     uploaded_by: int | None = None,
     category_id: int | None = None,
     caption: str | None = None,
+    channel_message_id: int | None = None,
 ) -> File:
     """Save a new file record."""
     # Ensure uploaded_by is a valid user ID or None (channels have negative IDs)
@@ -138,6 +139,7 @@ async def save_file(
         uploaded_by=valid_uploader,
         category_id=category_id,
         caption=caption,
+        channel_message_id=channel_message_id,
     )
     session.add(f)
     await session.commit()
