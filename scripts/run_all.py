@@ -67,7 +67,8 @@ def main() -> None:
             if exit_code is not None:
                 if not should_run:
                     continue
-                logger.warning("Process '%s' exited unexpectedly with code %s. Restarting...", name, exit_code)
+                logger.warning("Process '%s' exited unexpectedly with code %s. Restarting in 3s...", name, exit_code)
+                time.sleep(3)
                 mod = "server.app" if name == "web" else "bot"
                 procs[name] = start_process(mod, name)
 

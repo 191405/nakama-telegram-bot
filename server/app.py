@@ -392,6 +392,11 @@ async def on_startup(app: web.Application) -> None:
             logger.info("Telethon MTProto connected! Storage channel entity resolved.")
         except Exception as e:
             logger.error("Failed to connect Telethon MTProto client: %s", e)
+    else:
+        logger.warning(
+            "Telegram MTProto credentials not configured (TELEGRAM_API_ID, TELEGRAM_API_HASH, BOT_TOKEN). "
+            "Web gateway running in fallback mode."
+        )
 
 
 async def on_cleanup(app: web.Application) -> None:

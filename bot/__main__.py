@@ -35,6 +35,14 @@ logger = logging.getLogger(__name__)
 
 async def main() -> None:
     """Initialize and start the bot."""
+    if not settings.bot_token:
+        logger.warning(
+            "BOT_TOKEN is not configured! Telegram bot polling is suspended. "
+            "Set BOT_TOKEN in your environment or Fly.io secrets to activate the bot."
+        )
+        while True:
+            await asyncio.sleep(60)
+
     logger.info("Starting File Bot...")
 
     # ── Bot & Dispatcher ──────────────────────────────────────────────────

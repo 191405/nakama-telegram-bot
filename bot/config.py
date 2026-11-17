@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     """Application settings populated from .env file."""
 
     # Telegram
-    bot_token: str
+    bot_token: str = ""
 
     # Database
     database_url: str = (
