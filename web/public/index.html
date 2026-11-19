@@ -1183,6 +1183,7 @@
       if (hash === '#/' || hash === '#') {
         setActivePage('page-home');
         if (catalog.length === 0) await loadCatalog();
+        else renderHome();
         startHeroCycler();
       } else if (hash === '#/browse') {
         setActivePage('page-browse');
@@ -1259,7 +1260,7 @@
         const res = await fetch('/api/catalog');
         const data = await res.json();
         if (data.status === 'ok') {
-          catalog = data.series || [];
+          catalog = data.catalog || data.series || [];
           latestReleases = data.latest_releases || [];
           renderHome();
         }
@@ -1270,17 +1271,21 @@
 
     // --- Render Home Page ---
     function renderHome() {
-      // 1. Latest Released Episodes
+      if (catalog.length > 0) {
+        applyHero(catalog[heroIndex % catalog.length]);
+      }
+
+      // 1. Latest Released Episodes (Animepahe style)
       const relContainer = $('latestReleasesGrid');
       if (relContainer) {
         if (!latestReleases || latestReleases.length === 0) {
           relContainer.innerHTML = '<div class="empty-state">No recent episodes found.</div>';
         } else {
-          relContainer.innerHTML = latestReleases.slice(0, 6).map(ep => `
+          relContainer.innerHTML = latestReleases.slice(0, 9).map(ep => `
             <a href="#/watch/${ep.id}/${encodeURIComponent(ep.series)}" class="release-card">
-              <img class="release-thumb" src="${ep.poster || 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/default.jpg'}" alt="Thumb" loading="lazy">
+              <img class="release-thumb" src="${ep.cover_image || 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/default.jpg'}" alt="${esc(ep.display_title || ep.series)}" loading="lazy">
               <div class="release-info">
-                <div class="release-series truncate">${esc(ep.series)}</div>
+                <div class="release-series truncate">${esc(ep.display_title || ep.series)}</div>
                 <div class="release-ep">Episode ${ep.episode}</div>
                 <div class="release-meta mono">
                   <span>${ep.size}</span>
@@ -1303,16 +1308,37 @@
           catContainer.innerHTML = catalog.map(item => renderPosterCard(item)).join('');
         }
       }
+    }
 
-      // Enrich catalog cards with AniList
-      enrichCatalogMetadata();
+    function applyHero(hero) {
+      if (!hero) return;
+      const banner = hero.banner_image || hero.cover_image || 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/176496-Wj4jQx7rL8q3.jpg';
+      const title = hero.display_title || hero.name;
+      const desc = hero.description
+        ? hero.description.replace(/<[^>]*>?/gm, '').trim()
+        : `Stream high-fidelity 1080p release of ${hero.name}. ${hero.total_episodes || ''} episodes available in the vault.`;
+      const score = hero.score ? (hero.score / 10).toFixed(1) : '8.5';
+      const status = hero.status || 'AVAILABLE';
+
+      $('heroBackdrop').style.backgroundImage = `url('${banner}')`;
+      $('heroTitle').textContent = title;
+      $('heroDesc').textContent = desc;
+      $('heroScore').innerHTML = `&#9733; ${score} SCORE`;
+      $('heroStatus').textContent = status;
+      $('heroWatchBtn').onclick = () => {
+        navigate(`#/anime/${encodeURIComponent(hero.name)}`);
+      };
+      $('heroBrowseBtn').onclick = () => navigate('#/browse');
     }
 
     function renderPosterCard(item) {
-      const poster = item.poster || 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/default.jpg';
+      const poster = item.cover_image || item.poster || 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/default.jpg';
       const title = esc(item.display_title || item.name);
-      const score = item.score ? (item.score / 10).toFixed(1) : '7.8';
+      const score = item.score ? (item.score / 10).toFixed(1) : '8.0';
       const status = item.status || 'COMPLETED';
+      const epCount = item.total_episodes || item.episodes || 12;
+      const genre = (item.genres && item.genres[0]) || 'Action';
+      const year = item.year || 2026;
 
       return `
         <a href="#/anime/${encodeURIComponent(item.name)}" class="poster-card" data-series="${esc(item.name)}">
@@ -1323,86 +1349,34 @@
               <span class="poster-tag tag-quality mono">1080P</span>
             </div>
             <div class="poster-footer-bar">
-              <span class="poster-ep-count mono">EP ${item.episodes}</span>
+              <span class="poster-ep-count mono">EP ${epCount}</span>
               <span class="poster-rating mono">&#9733; ${score}</span>
             </div>
           </div>
           <div class="poster-details">
             <div class="poster-title truncate">${title}</div>
             <div class="poster-sub mono">
-              <span>${item.year || '2026'}</span>
+              <span>${year}</span>
               <span>&bull;</span>
-              <span class="truncate">${esc((item.genres && item.genres[0]) || 'Action')}</span>
+              <span class="truncate">${esc(genre)}</span>
             </div>
           </div>
         </a>
       `;
     }
 
-    async function enrichCatalogMetadata() {
-      for (const item of catalog) {
-        if (!item._enriched) {
-          item._enriched = true;
-          const meta = await fetchAniListMeta(item.name);
-          if (meta) {
-            item.poster = meta.coverImage.extraLarge || meta.coverImage.large;
-            item.banner = meta.bannerImage || item.poster;
-            item.display_title = meta.title.english || meta.title.romaji || item.name;
-            item.score = meta.averageScore;
-            item.synopsis = meta.description;
-            item.genres = meta.genres || ['Action'];
-            item.year = meta.seasonYear || 2026;
-            item.status = meta.status || 'COMPLETED';
-
-            // Update DOM card
-            const el = document.querySelector(`.poster-card[data-series="${CSS.escape(item.name)}"]`);
-            if (el) {
-              const img = el.querySelector('.poster-img');
-              if (img && item.poster) img.src = item.poster;
-              const titleEl = el.querySelector('.poster-title');
-              if (titleEl) titleEl.textContent = item.display_title;
-              const ratingEl = el.querySelector('.poster-rating');
-              if (ratingEl && item.score) ratingEl.innerHTML = `&#9733; ${(item.score/10).toFixed(1)}`;
-            }
-          }
-        }
-      }
-      updateHeroSpotlight();
-    }
-
     // --- Hero Spotlight Cycler ---
     function startHeroCycler() {
       if (heroCycleInterval) clearInterval(heroCycleInterval);
-      updateHeroSpotlight();
+      if (catalog.length > 0) {
+        applyHero(catalog[heroIndex % catalog.length]);
+      }
       heroCycleInterval = setInterval(() => {
         if (catalog.length > 0) {
-          heroIndex = (heroIndex + 1) % catalog.length;
-          updateHeroSpotlight();
+          heroIndex = (heroIndex + 1) % Math.min(catalog.length, 6);
+          applyHero(catalog[heroIndex]);
         }
-      }, 9000);
-    }
-
-    function updateHeroSpotlight() {
-      if (!catalog || catalog.length === 0) return;
-      const cur = catalog[heroIndex % catalog.length];
-      if (!cur) return;
-
-      const title = cur.display_title || cur.name;
-      const desc = cur.synopsis
-        ? cur.synopsis.replace(/<[^>]*>?/gm, '').trim()
-        : `Watch complete episodes of ${cur.name} in 1080p Web-DL with multi-track audio and high-fidelity seeking.`;
-      const bg = cur.banner || cur.poster || 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/176496-Wj4jQx7rL8q3.jpg';
-      const score = cur.score ? (cur.score / 10).toFixed(1) : '8.6';
-
-      $('heroTitle').textContent = title;
-      $('heroDesc').textContent = desc;
-      $('heroBackdrop').style.backgroundImage = `url('${bg}')`;
-      $('heroScore').innerHTML = `&#9733; ${score} SCORE`;
-      $('heroStatus').textContent = cur.status === 'RELEASING' ? 'AIRING NOW' : 'COMPLETED SERIES';
-
-      $('heroWatchBtn').onclick = () => {
-        navigate(`#/anime/${encodeURIComponent(cur.name)}`);
-      };
+      }, 8000);
     }
 
     // --- Browse Page ---
@@ -1423,7 +1397,7 @@
       if (activeSort === 'rating') {
         filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
       } else if (activeSort === 'episodes') {
-        filtered.sort((a, b) => b.episodes - a.episodes);
+        filtered.sort((a, b) => (b.total_episodes || b.episodes || 0) - (a.total_episodes || a.episodes || 0));
       } else if (activeSort === 'title') {
         filtered.sort((a, b) => (a.display_title || a.name).localeCompare(b.display_title || b.name));
       }
