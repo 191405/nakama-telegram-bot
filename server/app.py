@@ -482,6 +482,35 @@ async def handle_news(request: web.Request) -> web.Response:
     })
 
 
+async def handle_admin_stats(request: web.Request) -> web.Response:
+    """GET /api/admin/stats - Aggregate platform statistics for the admin dashboard."""
+    async with async_session() as session:
+        files = list((await session.execute(select(File))).scalars().all())
+
+    series_dict: dict[str, list[File]] = {}
+    total_downloads = 0
+    total_size_bytes = 0
+    for f in files:
+        name = (extract_series_name(f.file_name) or f.file_name).title().strip()
+        series_dict.setdefault(name, []).append(f)
+        total_downloads += f.download_count
+        total_size_bytes += f.file_size or 0
+
+    total_size_gb = round(total_size_bytes / (1024 ** 3), 2)
+
+    return web.json_response({
+        "status": "ok",
+        "total_series": len(series_dict),
+        "total_episodes": len(files),
+        "total_downloads": total_downloads,
+        "total_size_gb": total_size_gb,
+        "series_breakdown": [
+            {"name": name, "episodes": len(ep_list)}
+            for name, ep_list in sorted(series_dict.items(), key=lambda x: len(x[1]), reverse=True)
+        ],
+    })
+
+
 # --- Static / SPA Handler ----------------------------------------------------
 
 
@@ -545,6 +574,7 @@ def create_app() -> web.Application:
     app.router.add_get("/api/catalog", handle_catalog)
     app.router.add_get("/api/series/{name}", handle_series_detail)
     app.router.add_get("/api/news", handle_news)
+    app.router.add_get("/api/admin/stats", handle_admin_stats)
     app.router.add_get("/stream/{file_id}", handle_stream)
 
     # Static assets

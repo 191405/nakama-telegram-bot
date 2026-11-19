@@ -3,20 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nakama Network | Cinematic Anime & Donghua Streaming</title>
-  <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+  <title>Nakama Network | Curated Anime & Donghua Streaming Vault</title>
+  <meta name="description" content="Stream high-fidelity anime and donghua directly in your browser. Curated catalog, direct playback, and instant Telegram retrieval.">
+  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    /* ─── Design Tokens & Global CSS Reset ─────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
       background-color: #07090E;
       color: #E2E8F0;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
       display: flex;
@@ -32,23 +31,23 @@
     :root {
       --bg-page: #07090E;
       --bg-surface: #0E121A;
-      --bg-card: #141A24;
-      --bg-card-hover: #1C2432;
+      --bg-card: #131823;
+      --bg-card-hover: #1A2232;
       --border: rgba(255, 255, 255, 0.08);
-      --border-hover: rgba(255, 255, 255, 0.2);
+      --border-hover: rgba(255, 255, 255, 0.18);
       --crimson: #E50914;
-      --crimson-glow: rgba(229, 9, 20, 0.45);
       --crimson-hover: #FF1A27;
+      --crimson-glow: rgba(229, 9, 20, 0.35);
       --cyan: #00D8F6;
-      --cyan-glow: rgba(0, 216, 246, 0.4);
+      --cyan-subtle: rgba(0, 216, 246, 0.12);
       --amber: #F59E0B;
       --text-1: #FFFFFF;
       --text-2: #94A3B8;
       --text-3: #64748B;
       --radius-sm: 6px;
       --radius-md: 10px;
-      --radius-lg: 16px;
-      --radius-xl: 24px;
+      --radius-lg: 14px;
+      --radius-xl: 20px;
     }
 
     .container { max-width: 1320px; margin: 0 auto; padding: 0 20px; width: 100%; }
@@ -59,50 +58,12 @@
     .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-    /* ─── Cinematic Ambient Mesh Background ────────────────────────────── */
-    .ambient-bg {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-    .ambient-blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(140px);
-      opacity: 0.16;
-      animation: ambientDrift 22s infinite alternate ease-in-out;
-    }
-    .ambient-blob-1 {
-      width: 650px; height: 650px;
-      background: #E50914;
-      top: -150px; left: -100px;
-    }
-    .ambient-blob-2 {
-      width: 700px; height: 700px;
-      background: #0088FF;
-      top: 30%; right: -200px;
-      animation-delay: -7s;
-    }
-    .ambient-blob-3 {
-      width: 600px; height: 600px;
-      background: #00D8F6;
-      bottom: -100px; left: 25%;
-      animation-delay: -14s;
-    }
-    @keyframes ambientDrift {
-      0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(40px, 60px) scale(1.08); }
-      100% { transform: translate(-30px, -40px) scale(0.95); }
-    }
-
     /* ─── Navigation Header ────────────────────────────────────────────── */
     .nav {
       position: sticky; top: 0; z-index: 200;
-      background: rgba(7, 9, 14, 0.88);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(7, 9, 14, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
       height: 70px;
     }
@@ -112,173 +73,129 @@
     }
     .nav-brand {
       display: flex; align-items: center; gap: 12px; flex-shrink: 0;
-      transition: transform 0.2s;
+      transition: opacity 0.15s;
     }
-    .nav-brand:hover { transform: scale(1.02); }
-    .nav-brand svg { width: 38px; height: 38px; filter: drop-shadow(0 0 12px var(--crimson-glow)); }
+    .nav-brand:hover { opacity: 0.9; }
+    .nav-brand svg { width: 36px; height: 36px; }
     .nav-brand-title {
       font-size: 17px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-1); line-height: 1;
     }
     .nav-brand-sub {
-      font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--cyan); margin-top: 3px;
+      font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--crimson); margin-top: 3px;
     }
 
-    .nav-links {
-      display: none; align-items: center; gap: 6px;
-    }
-    @media (min-width: 880px) { .nav-links { display: flex; } }
+    .nav-links { display: none; align-items: center; gap: 6px; }
+    @media (min-width: 900px) { .nav-links { display: flex; } }
     .nav-link {
-      padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
-      color: var(--text-2); transition: all 0.15s; position: relative;
+      padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+      color: var(--text-2); transition: all 0.15s; display: inline-flex; align-items: center; gap: 8px;
     }
     .nav-link:hover { color: var(--text-1); background: rgba(255, 255, 255, 0.04); }
-    .nav-link.active {
-      color: #fff; background: rgba(229, 9, 20, 0.12); border: 1px solid rgba(229, 9, 20, 0.3);
-    }
-    .nav-badge-dot {
-      display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-      background: var(--cyan); margin-left: 6px; box-shadow: 0 0 8px var(--cyan);
-      animation: pulseDot 2s infinite;
-    }
-    @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+    .nav-link.active { color: #fff; background: rgba(255, 255, 255, 0.08); font-weight: 700; }
 
     .nav-search {
-      flex: 1; max-width: 380px; position: relative; display: none;
+      position: relative; flex: 1; max-width: 380px; display: none;
     }
     @media (min-width: 640px) { .nav-search { display: block; } }
     .nav-search input {
-      width: 100%; padding: 10px 36px 10px 38px;
-      background: var(--bg-surface); border: 1px solid var(--border);
-      border-radius: var(--radius-md); color: var(--text-1); font-size: 13px;
+      width: 100%; height: 40px; background: var(--bg-surface);
+      border: 1px solid var(--border); border-radius: 9999px;
+      padding: 0 40px 0 38px; color: var(--text-1); font-size: 13px;
       transition: all 0.2s; outline: none;
     }
-    .nav-search input::placeholder { color: var(--text-3); }
     .nav-search input:focus {
-      border-color: var(--crimson); background: var(--bg-card);
-      box-shadow: 0 0 16px var(--crimson-glow);
+      border-color: rgba(255, 255, 255, 0.25); background: #121722;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
     }
     .nav-search-icon {
-      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-      width: 16px; height: 16px; color: var(--text-3); pointer-events: none;
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      width: 15px; height: 15px; color: var(--text-3); pointer-events: none;
     }
     .nav-search-kbd {
-      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-      padding: 2px 6px; font-size: 10px; color: var(--text-3);
-      background: var(--bg-page); border: 1px solid var(--border); border-radius: 4px;
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 10px; font-weight: 700; color: var(--text-3);
+      padding: 2px 6px; border-radius: 4px; background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
     }
 
     .nav-actions { display: flex; align-items: center; gap: 10px; }
     .btn {
-      padding: 8px 16px; border-radius: var(--radius-md); font-size: 12px; font-weight: 700;
-      letter-spacing: 0.5px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-secondary {
-      color: var(--text-1); background: var(--bg-surface); border: 1px solid var(--border);
-    }
-    .btn-secondary:hover {
-      border-color: var(--border-hover); background: var(--bg-card);
-      transform: translateY(-1px);
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 9px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700;
+      transition: all 0.15s; cursor: pointer; text-decoration: none;
     }
     .btn-primary {
-      background: linear-gradient(135deg, #FF1A27 0%, #D3081E 100%);
-      color: #fff; border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 4px 16px var(--crimson-glow);
+      background: var(--crimson); color: #fff;
     }
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #FF2E3B 0%, #E50914 100%);
-      box-shadow: 0 6px 22px rgba(229, 9, 20, 0.6);
-      transform: translateY(-1px);
+    .btn-primary:hover { background: var(--crimson-hover); }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06); color: var(--text-1);
+      border: 1px solid var(--border);
     }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--border-hover); }
 
-    /* ─── Mobile Bottom / Hamburger Bar ────────────────────────────────── */
     .mobile-menu-btn {
       display: flex; align-items: center; justify-content: center;
       width: 40px; height: 40px; border-radius: var(--radius-sm);
-      background: var(--bg-surface); border: 1px solid var(--border);
-      color: var(--text-1);
+      background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-1);
     }
-    @media (min-width: 880px) { .mobile-menu-btn { display: none; } }
+    @media (min-width: 900px) { .mobile-menu-btn { display: none; } }
 
     .mobile-drawer {
-      display: none; position: fixed; inset: 70px 0 0 0; background: rgba(7, 9, 14, 0.98);
-      backdrop-filter: blur(24px); z-index: 199; padding: 24px 20px;
-      flex-direction: column; gap: 16px; border-bottom: 1px solid var(--border);
+      display: none; position: fixed; top: 70px; left: 0; right: 0; bottom: 0;
+      background: #07090E; padding: 24px 20px; z-index: 199;
+      flex-direction: column; gap: 12px; border-bottom: 1px solid var(--border);
     }
     .mobile-drawer.open { display: flex; }
-    .mobile-drawer .nav-link { font-size: 16px; padding: 12px; }
+    .mobile-drawer .nav-link { font-size: 16px; padding: 12px 16px; }
 
-    /* ─── Router Page Containers ───────────────────────────────────────── */
-    .page { display: none; position: relative; z-index: 10; flex: 1; padding-bottom: 60px; }
-    .page.active { display: block; animation: fadeIn 0.25s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    /* ─── Pages Router ─────────────────────────────────────────────────── */
+    .page { display: none; }
+    .page.active { display: block; animation: pageFade 0.25s ease-out; }
+    @keyframes pageFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ─── PAGE 1: CINEMATIC HOME LANDING ───────────────────────────────── */
+    /* ─── Hero Spotlight ───────────────────────────────────────────────── */
     .hero-spotlight {
       position: relative; border-radius: var(--radius-xl); overflow: hidden;
-      background: var(--bg-surface); border: 1px solid var(--border);
-      margin: 28px 0 40px 0; min-height: 440px; display: flex; align-items: center;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      margin: 28px 0 40px 0; min-height: 440px; display: flex; align-items: flex-end;
+      border: 1px solid var(--border);
+      background-color: #0E121A;
     }
-    @media (min-width: 900px) { .hero-spotlight { min-height: 500px; } }
+    @media (min-width: 768px) { .hero-spotlight { min-height: 480px; } }
     .hero-backdrop {
-      position: absolute; inset: 0; background-size: cover; background-position: center 20%;
-      opacity: 0.38; filter: saturate(1.15) brightness(0.85);
-      transition: background-image 0.8s ease-in-out, transform 8s ease-out;
-      animation: kenBurns 18s infinite alternate ease-in-out;
-    }
-    @keyframes kenBurns {
-      0% { transform: scale(1.02) translate(0, 0); }
-      100% { transform: scale(1.1) translate(-10px, -8px); }
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center 25%;
+      transition: background-image 0.6s ease-in-out;
+      filter: brightness(0.65);
     }
     .hero-gradient {
       position: absolute; inset: 0;
-      background: radial-gradient(circle at 75% 30%, rgba(229, 9, 20, 0.15) 0%, transparent 60%),
-                  linear-gradient(90deg, #07090E 0%, rgba(7, 9, 14, 0.95) 45%, rgba(7, 9, 14, 0.3) 100%),
-                  linear-gradient(0deg, #07090E 0%, transparent 40%);
+      background: linear-gradient(0deg, #0E121A 0%, rgba(14, 18, 26, 0.8) 45%, rgba(14, 18, 26, 0.2) 100%),
+                  linear-gradient(90deg, #0E121A 0%, rgba(14, 18, 26, 0.7) 40%, transparent 100%);
     }
     .hero-content {
-      position: relative; z-index: 10; padding: 40px 24px; max-width: 720px;
+      position: relative; z-index: 2; padding: 32px; max-width: 760px;
     }
-    @media (min-width: 768px) { .hero-content { padding: 48px 48px; } }
-    .hero-badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    @media (min-width: 768px) { .hero-content { padding: 48px; } }
+    .hero-badge-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     .badge {
-      padding: 4px 10px; border-radius: var(--radius-sm); font-size: 10px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.8px; display: inline-flex; align-items: center; gap: 5px;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase;
     }
-    .badge-live {
-      background: rgba(229, 9, 20, 0.15); border: 1px solid var(--crimson); color: #FF4D58;
-    }
-    .badge-live::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%; background: #FF2A4B;
-      box-shadow: 0 0 8px #FF2A4B; animation: pulseDot 1.4s infinite;
-    }
-    .badge-quality { background: rgba(0, 216, 246, 0.12); border: 1px solid rgba(0, 216, 246, 0.3); color: var(--cyan); }
-    .badge-rating { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--amber); }
+    .badge-status { background: rgba(255, 255, 255, 0.08); color: #fff; border: 1px solid var(--border); }
+    .badge-quality { background: var(--cyan-subtle); color: var(--cyan); border: 1px solid rgba(0, 216, 246, 0.25); }
+    .badge-rating { background: rgba(245, 158, 11, 0.12); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.25); }
 
     .hero-title {
-      font-size: 32px; font-weight: 800; color: var(--text-1); line-height: 1.15; margin-bottom: 14px;
-      letter-spacing: -0.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+      font-size: 32px; font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 14px;
+      letter-spacing: -0.5px;
     }
-    @media (min-width: 768px) { .hero-title { font-size: 44px; } }
+    @media (min-width: 768px) { .hero-title { font-size: 42px; } }
     .hero-desc {
-      font-size: 14px; line-height: 1.65; color: var(--text-2); margin-bottom: 24px; max-width: 600px;
+      font-size: 14px; line-height: 1.6; color: var(--text-2); margin-bottom: 24px; max-width: 600px;
     }
     .hero-btn-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-
-    /* Live Platform Metrics Bar */
-    .metrics-bar {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 40px;
-    }
-    @media (min-width: 768px) { .metrics-bar { grid-template-columns: repeat(4, 1fr); } }
-    .metric-card {
-      background: var(--bg-surface); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 16px 20px;
-      display: flex; flex-direction: column; gap: 4px;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-    .metric-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
-    .metric-val { font-size: 20px; font-weight: 800; color: var(--text-1); line-height: 1.2; }
-    .metric-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.8px; }
 
     /* Section Headers */
     .section-head {
@@ -287,142 +204,134 @@
     }
     .section-head-left { display: flex; align-items: center; gap: 12px; }
     .section-title {
-      font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-1);
+      font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-1);
     }
     .section-tag {
       font-size: 11px; padding: 2px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); color: var(--text-3);
     }
     .section-link { font-size: 12px; font-weight: 700; color: var(--cyan); transition: color 0.15s; }
-    .section-link:hover { color: #fff; text-decoration: underline; }
+    .section-link:hover { color: #fff; }
 
-    /* Animepahe-style Latest Releases Feed */
+    /* Releases Grid */
     .releases-grid {
       display: grid; gap: 14px; margin-bottom: 40px;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      grid-template-columns: 1fr;
     }
+    @media (min-width: 640px) { .releases-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (min-width: 1024px) { .releases-grid { grid-template-columns: repeat(3, 1fr); } }
+
     .release-card {
-      display: flex; gap: 14px; padding: 12px; border-radius: var(--radius-md);
       background: var(--bg-surface); border: 1px solid var(--border);
-      transition: all 0.2s; cursor: pointer;
+      border-radius: var(--radius-md); padding: 12px 14px;
+      display: flex; align-items: center; gap: 14px;
+      transition: all 0.2s; cursor: pointer; text-decoration: none;
     }
     .release-card:hover {
-      border-color: var(--crimson); background: var(--bg-card);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); transform: translateY(-2px);
+      background: var(--bg-card); border-color: rgba(229, 9, 20, 0.4); transform: translateY(-2px);
     }
     .release-thumb {
-      width: 70px; height: 98px; flex-shrink: 0; border-radius: var(--radius-sm);
-      overflow: hidden; background: var(--bg-card); position: relative;
+      width: 52px; height: 68px; border-radius: var(--radius-sm);
+      object-fit: cover; background: #1A2232; flex-shrink: 0;
     }
-    .release-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .release-body {
-      flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between;
-    }
-    .release-title { font-size: 13px; font-weight: 700; color: var(--text-1); line-height: 1.3; }
-    .release-card:hover .release-title { color: var(--crimson); }
-    .release-ep { font-size: 12px; font-weight: 800; color: var(--cyan); margin-top: 4px; }
-    .release-foot {
-      display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-3); margin-top: 8px;
+    .release-info { flex: 1; min-width: 0; }
+    .release-series { font-size: 13px; font-weight: 700; color: var(--text-1); margin-bottom: 2px; }
+    .release-ep { font-size: 12px; font-weight: 600; color: var(--cyan); }
+    .release-meta { font-size: 11px; color: var(--text-3); margin-top: 4px; display: flex; gap: 8px; }
+    .release-btn {
+      font-size: 11px; font-weight: 700; color: var(--crimson); text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 4px 8px; border-radius: 4px; background: rgba(229, 9, 20, 0.08);
+      flex-shrink: 0;
     }
 
-    /* Poster Grid */
+    /* Poster Showcase Grid */
     .poster-grid {
-      display: grid; gap: 16px; margin-bottom: 40px;
+      display: grid; gap: 18px; margin-bottom: 48px;
       grid-template-columns: repeat(2, 1fr);
     }
     @media (min-width: 640px) { .poster-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (min-width: 768px) { .poster-grid { grid-template-columns: repeat(4, 1fr); } }
-    @media (min-width: 1100px) { .poster-grid { grid-template-columns: repeat(5, 1fr); } }
+    @media (min-width: 860px) { .poster-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 1140px) { .poster-grid { grid-template-columns: repeat(5, 1fr); } }
 
     .poster-card {
-      border-radius: var(--radius-md); overflow: hidden; background: var(--bg-surface);
-      border: 1px solid var(--border); cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex; flex-direction: column; position: relative;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); overflow: hidden; display: flex;
+      flex-direction: column; transition: all 0.25s; cursor: pointer; text-decoration: none;
     }
     .poster-card:hover {
-      transform: translateY(-6px) scale(1.02);
-      border-color: var(--crimson);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 20px var(--crimson-glow);
+      transform: translateY(-4px); border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
     }
-    .poster-media {
-      aspect-ratio: 2/3; position: relative; overflow: hidden; background: var(--bg-card);
+    .poster-wrap {
+      position: relative; width: 100%; aspect-ratio: 2/3; overflow: hidden; background: #131823;
     }
-    .poster-media img {
-      width: 100%; height: 100%; object-fit: cover;
-      transition: transform 0.4s ease;
+    .poster-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+    .poster-card:hover .poster-img { transform: scale(1.04); }
+    .poster-badges {
+      position: absolute; top: 8px; left: 8px; right: 8px;
+      display: flex; justify-content: space-between; align-items: center; pointer-events: none;
     }
-    .poster-card:hover .poster-media img { transform: scale(1.08); }
-    .poster-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(7, 9, 14, 0.95) 0%, rgba(7, 9, 14, 0.2) 50%, transparent 100%);
+    .poster-tag {
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 3px 6px; border-radius: 4px;
     }
-    .poster-tag-top {
-      position: absolute; top: 10px; left: 10px; right: 10px;
-      display: flex; justify-content: space-between; align-items: center; z-index: 2;
+    .tag-status { background: rgba(7, 9, 14, 0.85); color: #fff; backdrop-filter: blur(4px); }
+    .tag-quality { background: rgba(0, 216, 246, 0.85); color: #000; font-weight: 800; }
+    .poster-footer-bar {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 18px 8px 6px 8px; background: linear-gradient(0deg, rgba(7,9,14,0.95) 0%, transparent 100%);
+      display: flex; justify-content: space-between; align-items: flex-end;
     }
-    .tag-status-done { background: var(--crimson); color: #fff; }
-    .tag-status-air { background: #059669; color: #fff; }
-    .tag-fhd { background: rgba(0, 0, 0, 0.8); color: #fff; border: 1px solid var(--border); }
-    .poster-tag-bottom {
-      position: absolute; bottom: 10px; left: 10px; right: 10px;
-      display: flex; justify-content: space-between; align-items: center; z-index: 2;
-    }
-    .poster-ep-count { color: var(--cyan); font-weight: 800; font-size: 11px; text-shadow: 0 1px 4px #000; }
-    .poster-star-score { color: var(--amber); font-weight: 800; font-size: 11px; text-shadow: 0 1px 4px #000; }
+    .poster-ep-count { font-size: 11px; font-weight: 700; color: var(--cyan); }
+    .poster-rating { font-size: 11px; font-weight: 700; color: var(--amber); }
 
-    .poster-meta { padding: 12px 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-    .poster-title { font-size: 13px; font-weight: 700; color: var(--text-1); line-height: 1.35; }
-    .poster-card:hover .poster-title { color: var(--crimson); }
-    .poster-sub { font-size: 11px; color: var(--text-3); margin-top: 6px; }
+    .poster-details { padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+    .poster-title { font-size: 13px; font-weight: 700; color: var(--text-1); line-height: 1.3; }
+    .poster-sub { font-size: 11px; color: var(--text-3); display: flex; gap: 6px; }
 
-    /* ─── PAGE 2: BROWSE / CATALOG WITH ADVANCED FILTERING ─────────────── */
+    /* ─── PAGE 2: BROWSE LIBRARY ───────────────────────────────────────── */
     .browse-header {
-      padding: 32px 0 20px 0;
+      padding: 36px 0 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 24px;
     }
-    .browse-header h1 { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+    .browse-header h1 { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px; }
     .browse-header p { font-size: 13px; color: var(--text-2); }
 
     .filter-bar {
-      background: var(--bg-surface); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 32px;
-      display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;
+      display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+      align-items: center; justify-content: space-between;
     }
-    .filter-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .filter-pills { display: flex; flex-wrap: wrap; gap: 8px; }
     .filter-pill {
-      padding: 6px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600;
-      background: var(--bg-card); border: 1px solid var(--border); color: var(--text-2);
-      transition: all 0.15s;
+      padding: 6px 14px; border-radius: 9999px; font-size: 12px; font-weight: 600;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      color: var(--text-2); cursor: pointer; transition: all 0.15s;
     }
-    .filter-pill:hover { color: #fff; border-color: var(--border-hover); }
-    .filter-pill.active {
-      background: var(--crimson); border-color: var(--crimson); color: #fff;
-    }
+    .filter-pill:hover { border-color: var(--border-hover); color: var(--text-1); }
+    .filter-pill.active { background: #fff; color: #000; border-color: #fff; font-weight: 700; }
+
+    .filter-selects { display: flex; gap: 8px; }
     .filter-select {
-      background: var(--bg-card); border: 1px solid var(--border);
-      color: var(--text-1); font-size: 12px; padding: 6px 12px; border-radius: var(--radius-sm);
-      outline: none;
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 6px 12px; color: var(--text-1); font-size: 12px; outline: none;
     }
 
-    /* ─── PAGE 3: AUTONEWS FEED ────────────────────────────────────────── */
+    /* ─── PAGE 3: THE PULSE (NEWS WIRE) ────────────────────────────────── */
     .news-header {
       padding: 36px 0 24px 0; display: flex; align-items: flex-end; justify-content: space-between;
       border-bottom: 1px solid var(--border); margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
     }
-    .news-header-title { font-size: 32px; font-weight: 800; color: #fff; line-height: 1.1; }
+    .news-header-title { font-size: 30px; font-weight: 800; color: #fff; line-height: 1.1; }
     .news-header-sub { font-size: 13px; color: var(--text-2); margin-top: 6px; }
 
     .news-editorial-hero {
       position: relative; border-radius: var(--radius-xl); overflow: hidden;
       background: var(--bg-surface); border: 1px solid var(--border);
-      margin-bottom: 40px; display: flex; flex-direction: column;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      margin-bottom: 36px; display: flex; flex-direction: column;
     }
     @media (min-width: 840px) {
-      .news-editorial-hero { flex-direction: row; min-height: 340px; }
+      .news-editorial-hero { flex-direction: row; min-height: 320px; }
     }
     .editorial-media {
-      flex: 1.2; background: var(--bg-card); position: relative; min-height: 240px; overflow: hidden;
+      flex: 1.2; background: #131823; position: relative; min-height: 220px; overflow: hidden;
     }
     .editorial-media img { width: 100%; height: 100%; object-fit: cover; }
     .editorial-content {
@@ -431,79 +340,78 @@
     }
     .editorial-badge {
       font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
-      color: var(--cyan); margin-bottom: 12px;
+      color: var(--cyan); margin-bottom: 10px;
     }
     .editorial-title {
-      font-size: 24px; font-weight: 800; color: var(--text-1); line-height: 1.25; margin-bottom: 12px;
+      font-size: 22px; font-weight: 800; color: var(--text-1); line-height: 1.25; margin-bottom: 12px;
     }
     .editorial-desc { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 20px; }
 
     .news-grid {
-      display: grid; gap: 20px;
+      display: grid; gap: 18px;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       margin-bottom: 48px;
     }
     .news-card {
       background: var(--bg-surface); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 20px;
+      border-radius: var(--radius-md); padding: 20px;
       display: flex; flex-direction: column; justify-content: space-between;
-      transition: all 0.2s; position: relative; overflow: hidden;
+      transition: all 0.2s;
     }
     .news-card:hover {
-      border-color: var(--cyan); transform: translateY(-3px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 16px var(--cyan-glow);
+      border-color: rgba(255, 255, 255, 0.2); transform: translateY(-2px);
     }
     .news-meta-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .news-category {
       font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;
-      color: var(--cyan); background: rgba(0, 216, 246, 0.1); padding: 3px 8px; border-radius: 4px;
+      color: var(--cyan); background: var(--cyan-subtle); padding: 3px 8px; border-radius: 4px;
     }
-    .news-date { font-size: 11px; color: var(--text-3); }
+    .news-time { font-size: 11px; color: var(--text-3); }
     .news-title {
       font-size: 16px; font-weight: 700; color: var(--text-1); line-height: 1.35; margin-bottom: 10px;
     }
-    .news-card:hover .news-title { color: var(--cyan); }
-    .news-excerpt { font-size: 12px; color: var(--text-2); line-height: 1.6; margin-bottom: 16px; flex: 1; }
-    .news-card-foot {
-      display: flex; align-items: center; justify-content: space-between;
-      padding-top: 14px; border-top: 1px solid var(--border);
+    .news-snippet {
+      font-size: 12px; color: var(--text-2); line-height: 1.6; margin-bottom: 18px;
     }
-    .news-source-tag { font-size: 11px; font-weight: 600; color: var(--text-3); }
+    .news-action {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700;
+      color: var(--cyan); transition: color 0.15s; text-decoration: none;
+    }
+    .news-action:hover { color: #fff; }
 
     /* ─── PAGE 4: ANIME DETAIL PAGE ────────────────────────────────────── */
+    .series-stage { margin-top: -120px; position: relative; z-index: 10; margin-bottom: 48px; }
     .series-banner-wrap {
-      position: relative; height: 340px; overflow: hidden; background: var(--bg-surface);
+      width: 100%; height: 320px; position: relative; overflow: hidden; background: #0E121A;
     }
-    @media (min-width: 768px) { .series-banner-wrap { height: 420px; } }
-    .series-banner-img { width: 100%; height: 100%; object-fit: cover; }
+    .series-banner-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.65); }
     .series-banner-mask {
       position: absolute; inset: 0;
-      background: linear-gradient(to top, var(--bg-page) 0%, rgba(7,9,14,0.7) 45%, rgba(7,9,14,0.9) 100%);
+      background: linear-gradient(0deg, #07090E 0%, rgba(7,9,14,0.7) 40%, transparent 100%);
     }
 
-    .series-stage {
-      position: relative; margin-top: -180px; z-index: 10; margin-bottom: 40px;
-    }
     .series-layout {
-      display: flex; gap: 32px; align-items: flex-start;
+      display: flex; flex-direction: column; gap: 32px; margin-bottom: 40px;
     }
-    @media (max-width: 767px) {
-      .series-layout { flex-direction: column; align-items: center; text-align: center; }
+    @media (min-width: 768px) {
+      .series-layout { flex-direction: row; align-items: flex-start; }
     }
     .series-cover-box {
-      width: 220px; flex-shrink: 0; border-radius: var(--radius-lg); overflow: hidden;
-      border: 2px solid var(--border); box-shadow: 0 16px 40px rgba(0,0,0,0.8);
-      background: var(--bg-card);
+      width: 220px; aspect-ratio: 2/3; border-radius: var(--radius-lg);
+      overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.15);
+      background: var(--bg-card); flex-shrink: 0; box-shadow: 0 16px 36px rgba(0,0,0,0.8);
+      margin: 0 auto;
     }
-    .series-cover-box img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+    @media (min-width: 768px) { .series-cover-box { margin: 0; } }
+    .series-cover-box img { width: 100%; height: 100%; object-fit: cover; }
 
     .series-info { flex: 1; padding-top: 12px; }
     .series-heading { font-size: 28px; font-weight: 800; color: var(--text-1); line-height: 1.2; }
-    @media (min-width: 768px) { .series-heading { font-size: 36px; } }
+    @media (min-width: 768px) { .series-heading { font-size: 34px; } }
     .series-subheading { font-size: 14px; color: var(--text-3); margin-top: 4px; font-weight: 500; }
 
     .series-meta-bar {
-      display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; align-items: center;
+      display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; align-items: center;
     }
     @media (max-width: 767px) { .series-meta-bar { justify-content: center; } }
     .meta-chip {
@@ -514,9 +422,8 @@
     .meta-chip-score { color: var(--amber); border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.08); }
 
     .series-synopsis {
-      font-size: 14px; line-height: 1.7; color: var(--text-2); max-width: 760px; margin-bottom: 24px;
+      font-size: 14px; line-height: 1.65; color: var(--text-2); max-width: 760px; margin-bottom: 24px;
     }
-
     .series-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
     @media (max-width: 767px) { .series-buttons { justify-content: center; } }
 
@@ -529,7 +436,7 @@
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
     }
-    .hub-title { font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-1); }
+    .hub-title { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-1); }
 
     .pill-grid {
       display: grid; gap: 8px; margin-bottom: 24px;
@@ -552,7 +459,7 @@
       padding: 12px 18px; border-radius: var(--radius-md); background: var(--bg-card);
       border: 1px solid var(--border); margin-bottom: 8px; transition: all 0.15s;
     }
-    .ep-row:hover { background: var(--bg-card-hover); border-color: rgba(229, 9, 20, 0.4); }
+    .ep-row:hover { background: var(--bg-card-hover); border-color: rgba(229, 9, 20, 0.35); }
     .ep-row-left { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1; }
     .ep-badge-num {
       width: 48px; text-align: center; font-size: 12px; font-weight: 800;
@@ -562,7 +469,7 @@
     .ep-row-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .ep-filesize { font-size: 11px; color: var(--text-3); }
 
-    /* ─── PAGE 5: CINEMATIC WATCH PLAYER ───────────────────────────────── */
+    /* ─── PAGE 5: WATCH PLAYER ─────────────────────────────────────────── */
     .watch-stage { margin: 24px 0 48px 0; }
     .watch-player-box {
       width: 100%; aspect-ratio: 16/9; background: #000;
@@ -578,67 +485,124 @@
     }
     .watch-nav-btns { display: flex; align-items: center; gap: 10px; }
 
-    /* ─── PAGE 6: BRAND ASSETS & DOWNLOADABLE ICON ─────────────────────── */
-    .brand-hero {
-      padding: 36px 0 24px 0; border-bottom: 1px solid var(--border); margin-bottom: 36px;
-    }
-    .brand-hero h1 { font-size: 32px; font-weight: 800; color: #fff; margin-bottom: 8px; }
-    .brand-hero p { font-size: 14px; color: var(--text-2); max-width: 600px; }
-
-    .brand-grid {
-      display: grid; gap: 24px;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      margin-bottom: 48px;
-    }
-    .brand-asset-card {
+    /* ─── PAGE 6: ADMIN DASHBOARD & BRAND CONTROL ──────────────────────── */
+    .admin-gate-wrap {
+      max-width: 440px; margin: 80px auto; padding: 36px 32px;
       background: var(--bg-surface); border: 1px solid var(--border);
-      border-radius: var(--radius-xl); padding: 32px;
-      display: flex; flex-direction: column; align-items: center; text-align: center;
-      transition: all 0.2s;
+      border-radius: var(--radius-xl); text-align: center;
     }
-    .brand-asset-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
-    .brand-preview-wrap {
-      width: 160px; height: 160px; margin: 16px 0 24px 0; display: flex; align-items: center; justify-content: center;
+    .admin-gate-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+    .admin-gate-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; margin-bottom: 24px; }
+    .admin-pin-input {
+      width: 100%; height: 46px; background: #07090E; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); text-align: center; font-size: 18px; font-weight: 700;
+      letter-spacing: 6px; color: #fff; margin-bottom: 16px; outline: none;
     }
-    .brand-preview-wrap svg { width: 100%; height: 100%; filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.6)); }
+    .admin-pin-input:focus { border-color: var(--crimson); }
+    .admin-gate-error { color: #EF4444; font-size: 12px; margin-top: 10px; display: none; }
+
+    .admin-view-header {
+      padding: 36px 0 24px 0; border-bottom: 1px solid var(--border); margin-bottom: 32px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .admin-view-title { font-size: 28px; font-weight: 800; color: #fff; }
+    .admin-view-sub { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+
+    /* Admin Metrics Grid */
+    .admin-stats-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 36px;
+    }
+    @media (min-width: 860px) { .admin-stats-grid { grid-template-columns: repeat(4, 1fr); } }
+    .admin-stat-card {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 18px 20px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .admin-stat-num { font-size: 24px; font-weight: 800; color: #fff; }
+    .admin-stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-3); }
+
+    /* Quick Operations */
+    .admin-actions-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 36px;
+    }
+    .admin-action-card {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px; display: flex; align-items: center; justify-content: space-between;
+      transition: all 0.15s; text-decoration: none;
+    }
+    .admin-action-card:hover { border-color: var(--border-hover); background: var(--bg-card); }
+    .admin-action-name { font-size: 13px; font-weight: 700; color: #fff; }
+    .admin-action-desc { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+    /* Brand Section inside Admin */
+    .admin-brand-section {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); padding: 28px; margin-bottom: 36px;
+    }
+    .admin-brand-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .admin-brand-title { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #fff; }
+    
+    .admin-brand-grid {
+      display: grid; gap: 24px; grid-template-columns: 1fr;
+    }
+    @media (min-width: 800px) { .admin-brand-grid { grid-template-columns: 300px 1fr; } }
+    
+    .admin-logo-preview-box {
+      background: #07090E; border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px;
+    }
+    .admin-logo-preview-box svg { width: 140px; height: 140px; }
 
     .palette-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 16px; width: 100%;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;
     }
     .color-chip {
-      border-radius: var(--radius-md); padding: 16px; border: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 8px; text-align: left;
+      background: #07090E; border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 12px; display: flex; flex-direction: column; gap: 6px;
     }
-    .color-box { height: 48px; border-radius: var(--radius-sm); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .color-box { height: 36px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08); }
+    .color-name { font-size: 11px; font-weight: 700; color: #fff; }
+    .color-hex { font-size: 10px; color: var(--text-3); font-family: 'JetBrains Mono', monospace; }
 
-    /* ─── PROFESSIONAL REDESIGNED FOOTER ───────────────────────────────── */
+    /* Catalog Breakdown Table */
+    .admin-table-wrap {
+      overflow-x: auto; background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); margin-bottom: 48px;
+    }
+    .admin-table {
+      width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;
+    }
+    .admin-table th {
+      padding: 14px 20px; font-weight: 700; font-size: 11px; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text-3); border-bottom: 1px solid var(--border); background: #0A0D14;
+    }
+    .admin-table td {
+      padding: 14px 20px; border-bottom: 1px solid var(--border); color: var(--text-1);
+    }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    /* ─── Clean Brand Footer ───────────────────────────────────────────── */
     .footer {
       margin-top: auto; border-top: 1px solid var(--border);
-      background: #05070B; padding: 48px 0 32px 0;
+      background: #05070B; padding: 48px 0 28px 0;
       position: relative; z-index: 10;
     }
     .footer-top {
       display: grid; gap: 36px; margin-bottom: 40px;
       grid-template-columns: 1fr;
     }
-    @media (min-width: 768px) { .footer-top { grid-template-columns: 1.8fr 1fr 1fr; } }
+    @media (min-width: 768px) { .footer-top { grid-template-columns: 2fr 1fr 1fr; } }
     .footer-brand { display: flex; flex-direction: column; gap: 14px; }
     .footer-tagline { font-size: 13px; line-height: 1.6; color: var(--text-2); max-width: 380px; }
-    .footer-status-badge {
-      display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
-      color: #10B981; background: rgba(16, 185, 129, 0.1); padding: 4px 10px; border-radius: var(--radius-sm);
-      border: 1px solid rgba(16, 185, 129, 0.25); width: fit-content;
-    }
-    .footer-status-badge::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px #10B981;
-    }
 
     .footer-col-title {
       font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-1); margin-bottom: 16px;
     }
     .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
     .footer-link { font-size: 13px; color: var(--text-2); transition: color 0.15s; }
-    .footer-link:hover { color: var(--crimson); }
+    .footer-link:hover { color: #fff; }
 
     .footer-bottom {
       padding-top: 24px; border-top: 1px solid var(--border);
@@ -654,13 +618,6 @@
   </style>
 </head>
 <body>
-
-  <!-- Ambient Dynamic Lighting Mesh -->
-  <div class="ambient-bg">
-    <div class="ambient-blob ambient-blob-1"></div>
-    <div class="ambient-blob ambient-blob-2"></div>
-    <div class="ambient-blob ambient-blob-3"></div>
-  </div>
 
   <!-- ─── Top Navigation Bar ────────────────────────────────────────────── -->
   <header class="nav">
@@ -684,13 +641,10 @@
       <nav class="nav-links">
         <a href="#/" class="nav-link active" data-page="page-home">Home</a>
         <a href="#/browse" class="nav-link" data-page="page-browse">Browse Library</a>
-        <a href="#/news" class="nav-link" data-page="page-news">
-          AutoNews <span class="nav-badge-dot"></span>
-        </a>
-        <a href="#/brand" class="nav-link" data-page="page-brand">Brand Assets</a>
+        <a href="#/pulse" class="nav-link" data-page="page-pulse">The Pulse</a>
       </nav>
 
-      <!-- Instant Keyboard Search -->
+      <!-- Search Input -->
       <div class="nav-search">
         <svg class="nav-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -699,7 +653,7 @@
         <span class="nav-search-kbd mono">/</span>
       </div>
 
-      <!-- Actions -->
+      <!-- Action Button -->
       <div class="nav-actions">
         <a href="https://t.me/NakamaNetworkbot" target="_blank" rel="noopener" class="btn btn-primary">
           Telegram Vault
@@ -717,29 +671,29 @@
   <div id="mobileDrawer" class="mobile-drawer">
     <a href="#/" class="nav-link" onclick="toggleMobileMenu()">Home</a>
     <a href="#/browse" class="nav-link" onclick="toggleMobileMenu()">Browse Library</a>
-    <a href="#/news" class="nav-link" onclick="toggleMobileMenu()">AutoNews Updates</a>
-    <a href="#/brand" class="nav-link" onclick="toggleMobileMenu()">Brand Assets & Logo</a>
+    <a href="#/pulse" class="nav-link" onclick="toggleMobileMenu()">The Pulse</a>
+    <a href="#/admin" class="nav-link" onclick="toggleMobileMenu()">Admin Dashboard</a>
     <a href="https://t.me/NakamaNetworkbot" target="_blank" class="btn btn-primary" style="margin-top:10px;">
       Open Telegram Bot
     </a>
   </div>
 
-  <!-- ─── PAGE 1: CINEMATIC HOME LANDING ───────────────────────────────── -->
+  <!-- ─── PAGE 1: HOME LANDING ──────────────────────────────────────────── -->
   <main id="page-home" class="page active">
     <div class="container">
 
-      <!-- Dynamic Ambient Hero Spotlight -->
+      <!-- Hero Spotlight -->
       <section id="heroSpotlight" class="hero-spotlight">
         <div id="heroBackdrop" class="hero-backdrop"></div>
         <div class="hero-gradient"></div>
         <div class="hero-content">
           <div class="hero-badge-row">
-            <span class="badge badge-live" id="heroStatus">AIRING NOW</span>
-            <span class="badge badge-quality mono" id="heroQuality">1080P MASTER</span>
+            <span class="badge badge-status" id="heroStatus">NOW STREAMING</span>
+            <span class="badge badge-quality mono" id="heroQuality">1080P WEB-DL</span>
             <span class="badge badge-rating mono" id="heroScore">&#9733; 8.8 SCORE</span>
           </div>
-          <h1 id="heroTitle" class="hero-title">Loading Featured Masterpiece...</h1>
-          <p id="heroDesc" class="hero-desc line-clamp-3">Loading release synopsis from the decentralized media vault...</p>
+          <h1 id="heroTitle" class="hero-title">Loading Featured Title...</h1>
+          <p id="heroDesc" class="hero-desc line-clamp-3">Loading synopsis from the media vault...</p>
           <div class="hero-btn-row">
             <button id="heroWatchBtn" class="btn btn-primary" style="padding:12px 24px; font-size:13px;">
               &#9654; Start Streaming
@@ -751,46 +705,26 @@
         </div>
       </section>
 
-      <!-- Platform Live Metrics -->
-      <div class="metrics-bar">
-        <div class="metric-card">
-          <div class="metric-val mono" id="statSeries">8 Series</div>
-          <div class="metric-label">Curated Catalog</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-val mono" id="statEpisodes">119 Episodes</div>
-          <div class="metric-label">Total Media Files</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-val mono" style="color:var(--cyan);">1080p Web-DL</div>
-          <div class="metric-label">Direct MTProto Stream</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-val mono" style="color:#10B981;">0.0s Buffering</div>
-          <div class="metric-label">RFC 7233 Byte Seeking</div>
-        </div>
-      </div>
-
-      <!-- Animepahe-style Latest Releases Feed -->
+      <!-- Latest Released Episodes -->
       <section>
         <div class="section-head">
           <div class="section-head-left">
             <span class="section-title">Latest Released Episodes</span>
-            <span class="section-tag mono">Animepahe Feed</span>
+            <span class="section-tag mono">Recent Additions</span>
           </div>
           <a href="#/browse" class="section-link">View All &rarr;</a>
         </div>
         <div id="latestReleasesGrid" class="releases-grid"></div>
       </section>
 
-      <!-- Trending & Popular Showcase (Lucifer Donghua style) -->
+      <!-- Trending Showcase -->
       <section>
         <div class="section-head">
           <div class="section-head-left">
-            <span class="section-title">Trending in Vault</span>
-            <span id="seriesCount" class="section-tag mono">8 Available</span>
+            <span class="section-title">Curated Library</span>
+            <span class="section-tag mono">Direct Vault</span>
           </div>
-          <a href="#/browse" class="section-link">Filter Catalog &rarr;</a>
+          <a href="#/browse" class="section-link">Browse Full Vault &rarr;</a>
         </div>
         <div id="homeCatalogGrid" class="poster-grid"></div>
       </section>
@@ -798,35 +732,35 @@
     </div>
   </main>
 
-  <!-- ─── PAGE 2: BROWSE / COMPLETE LIBRARY ────────────────────────────── -->
+  <!-- ─── PAGE 2: BROWSE LIBRARY ───────────────────────────────────────── -->
   <main id="page-browse" class="page">
     <div class="container">
       <div class="browse-header">
-        <h1>Anime & Donghua Vault Library</h1>
-        <p>Explore the complete catalog with multi-factor filtering, genres, and instant sorting.</p>
+        <h1>Browse Curated Catalog</h1>
+        <p>Explore full anime and donghua seasons available for streaming and direct download.</p>
       </div>
 
-      <!-- Advanced Filter Bar -->
+      <!-- Filters -->
       <div class="filter-bar">
-        <div class="filter-group" id="genreFilterGroup">
+        <div class="filter-pills" id="genrePills">
           <button class="filter-pill active" data-genre="ALL">All Genres</button>
           <button class="filter-pill" data-genre="Action">Action</button>
-          <button class="filter-pill" data-genre="Supernatural">Supernatural</button>
-          <button class="filter-pill" data-genre="Comedy">Comedy</button>
-          <button class="filter-pill" data-genre="Drama">Drama</button>
+          <button class="filter-pill" data-genre="Adventure">Adventure</button>
           <button class="filter-pill" data-genre="Fantasy">Fantasy</button>
+          <button class="filter-pill" data-genre="Drama">Drama</button>
+          <button class="filter-pill" data-genre="Sci-Fi">Sci-Fi</button>
+          <button class="filter-pill" data-genre="Comedy">Comedy</button>
         </div>
 
-        <div class="filter-group">
-          <select id="sortFilterSelect" class="filter-select">
-            <option value="popular">Sort: Most Popular</option>
-            <option value="rating">Sort: Highest Rating</option>
-            <option value="episodes">Sort: Most Episodes</option>
-            <option value="title">Sort: Title (A-Z)</option>
+        <div class="filter-selects">
+          <select id="sortSelect" class="filter-select">
+            <option value="popular">Popularity</option>
+            <option value="rating">Highest Rated</option>
+            <option value="episodes">Most Episodes</option>
+            <option value="title">Alphabetical</option>
           </select>
-
-          <select id="statusFilterSelect" class="filter-select">
-            <option value="ALL">Status: All</option>
+          <select id="statusSelect" class="filter-select">
+            <option value="ALL">All Status</option>
             <option value="COMPLETED">Completed</option>
             <option value="ONGOING">Ongoing</option>
           </select>
@@ -838,13 +772,13 @@
     </div>
   </main>
 
-  <!-- ─── PAGE 3: AUTONEWS FEED ────────────────────────────────────────── -->
-  <main id="page-news" class="page">
+  <!-- ─── PAGE 3: THE PULSE (INDUSTRY WIRE) ────────────────────────────── -->
+  <main id="page-pulse" class="page">
     <div class="container">
       <div class="news-header">
         <div>
-          <h1 class="news-header-title">AutoNews Media Wire</h1>
-          <p class="news-header-sub">Automated real-time broadcast intelligence, studio updates, and industry releases.</p>
+          <h1 class="news-header-title">The Pulse</h1>
+          <p class="news-header-sub">Anime industry dispatches, studio production news, and seasonal release updates.</p>
         </div>
         <button id="refreshNewsBtn" class="btn btn-secondary">
           <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -857,9 +791,9 @@
       <!-- Featured Top Editorial -->
       <div id="newsEditorialHero" class="news-editorial-hero" style="display:none;"></div>
 
-      <!-- Real-Time News Cards -->
+      <!-- News Cards -->
       <div id="newsCardsGrid" class="news-grid">
-        <div class="empty-state">Connecting to automated news wire...</div>
+        <div class="empty-state">Loading latest news dispatches...</div>
       </div>
     </div>
   </main>
@@ -896,13 +830,13 @@
       <div class="episodes-hub">
         <div class="episodes-hub-header">
           <span class="hub-title">Episode Selector</span>
-          <span id="hubEpCount" class="mono text-xs text-slate-400">0 episodes</span>
+          <span id="hubEpCount" class="text-xs text-slate-400 mono">0 Episodes</span>
         </div>
         
-        <!-- Lucifer Donghua style numbered pill grid -->
+        <!-- Numbered pill grid -->
         <div id="hubPillsGrid" class="pill-grid"></div>
 
-        <!-- Animepahe style detailed episode list -->
+        <!-- Detailed episode list -->
         <div id="hubEpisodesList"></div>
       </div>
 
@@ -944,104 +878,225 @@
     </div>
   </main>
 
-  <!-- ─── PAGE 6: BRAND ASSETS & DOWNLOADABLE ICON ─────────────────────── -->
-  <main id="page-brand" class="page">
+  <!-- ─── PAGE 6: ADMIN DASHBOARD & BRAND CONTROL ──────────────────────── -->
+  <main id="page-admin" class="page">
     <div class="container">
-      <div class="brand-hero">
-        <h1>Brand Assets & Official Identity</h1>
-        <p>Official vector icons, high-resolution logos, and design tokens for the Nakama Network platform.</p>
+      
+      <!-- PIN Gate View (Unauthenticated) -->
+      <div id="adminGateView" class="admin-gate-wrap">
+        <svg style="width:48px; height:48px; margin:0 auto 16px auto;" viewBox="0 0 512 512" fill="none">
+          <rect width="512" height="512" rx="120" fill="#141A24" stroke="rgba(255, 255, 255, 0.12)" stroke-width="8"/>
+          <path d="M128 384V128h64v256z" fill="#E50914"/>
+          <path d="M192 128l128 256h64L256 128z" fill="#E50914"/>
+          <path d="M320 384V128h64v256z" fill="#E50914"/>
+          <circle cx="384" cy="128" r="28" fill="#00D8F6"/>
+        </svg>
+        <h2 class="admin-gate-title">Admin Authorization</h2>
+        <p class="admin-gate-desc">Enter your 6-digit administrator PIN to access platform metrics, brand assets, and system control.</p>
+        <form id="adminAuthForm" onsubmit="handleAdminLogin(event)">
+          <input type="password" id="adminPinInput" class="admin-pin-input mono" placeholder="••••••" maxlength="6" autofocus>
+          <button type="submit" class="btn btn-primary" style="width:100%; height:44px;">Unlock Dashboard</button>
+          <div id="adminGateError" class="admin-gate-error">Invalid security code. Please check your credentials.</div>
+        </form>
       </div>
 
-      <div class="brand-grid">
-        <!-- SVG Vector Emblem Card -->
-        <div class="brand-asset-card">
-          <span class="badge badge-quality mono">VECTOR EMBLEM</span>
-          <div class="brand-preview-wrap">
-            <svg id="officialSvgPreview" viewBox="0 0 512 512" fill="none">
-              <defs>
-                <radialGradient id="bgGradPreview" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
-                  <stop offset="0%" stop-color="#1A2234"/>
-                  <stop offset="100%" stop-color="#090B10"/>
-                </radialGradient>
-                <linearGradient id="crimsonGradPreview" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#FF2A4B"/>
-                  <stop offset="100%" stop-color="#D3081E"/>
-                </linearGradient>
-                <linearGradient id="cyanGradPreview" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#00F0FF"/>
-                  <stop offset="100%" stop-color="#0080FF"/>
-                </linearGradient>
-              </defs>
-              <rect width="512" height="512" rx="128" fill="url(#bgGradPreview)"/>
-              <rect width="508" height="508" x="2" y="2" rx="126" fill="none" stroke="rgba(255, 255, 255, 0.12)" stroke-width="4"/>
-              <path d="M128 384 L128 128 L192 128 L192 384 Z" fill="url(#crimsonGradPreview)"/>
-              <path d="M192 128 L320 384 L384 384 L256 128 Z" fill="url(#crimsonGradPreview)"/>
-              <path d="M320 384 L320 128 L384 128 L384 384 Z" fill="url(#crimsonGradPreview)"/>
-              <circle cx="384" cy="128" r="28" fill="url(#cyanGradPreview)"/>
-              <circle cx="384" cy="128" r="14" fill="#FFFFFF"/>
-            </svg>
+      <!-- Authenticated Admin View -->
+      <div id="adminAuthView" style="display:none;">
+        <div class="admin-view-header">
+          <div>
+            <h1 class="admin-view-title">Nakama Control & Brand Operations</h1>
+            <p class="admin-view-sub">Platform metrics, production links, brand assets, and catalog inventory.</p>
           </div>
-          <h3 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:8px;">Official Nakama Icon</h3>
-          <p style="font-size:13px; color:var(--text-2); margin-bottom:20px;">Lossless scalable vector graphic (.svg) designed for app stores, web headers, and mobile manifests.</p>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <a href="/assets/logo.svg" download="nakama-network-logo.svg" class="btn btn-primary">
-              Download SVG
-            </a>
-            <button id="downloadPngBtn" class="btn btn-secondary">
-              Download PNG (512x512)
-            </button>
+          <button onclick="handleAdminLogout()" class="btn btn-secondary">
+            Sign Out
+          </button>
+        </div>
+
+        <!-- Metric Overview Cards -->
+        <div class="admin-stats-grid">
+          <div class="admin-stat-card">
+            <div class="admin-stat-num mono" id="admStatSeries">--</div>
+            <div class="admin-stat-label">Series In Catalog</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-num mono" id="admStatEpisodes">--</div>
+            <div class="admin-stat-label">Episodes Indexed</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-num mono" id="admStatDownloads" style="color:var(--cyan);">--</div>
+            <div class="admin-stat-label">Downloads & Streams</div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-num mono" id="admStatStorage" style="color:#10B981;">-- GB</div>
+            <div class="admin-stat-label">Media Volume</div>
           </div>
         </div>
 
-        <!-- Design Color Tokens -->
-        <div class="brand-asset-card" style="align-items:flex-start; text-align:left;">
-          <span class="badge badge-live mono">DESIGN PALETTE</span>
-          <h3 style="font-size:18px; font-weight:800; color:#fff; margin:16px 0 8px 0;">Official Color System</h3>
-          <p style="font-size:13px; color:var(--text-2); margin-bottom:20px;">Standard hexadecimal color values used across the Nakama Network interfaces.</p>
-          
-          <div class="palette-grid">
-            <div class="color-chip">
-              <div class="color-box" style="background:#E50914;"></div>
-              <div style="font-size:12px; font-weight:700; color:#fff;">Crimson Primary</div>
-              <div class="mono" style="font-size:11px; color:var(--text-3);">#E50914</div>
+        <!-- Quick System Links -->
+        <div class="admin-actions-grid">
+          <a href="https://t.me/NakamaNetworkbot" target="_blank" rel="noopener" class="admin-action-card">
+            <div>
+              <div class="admin-action-name">Telegram Bot</div>
+              <div class="admin-action-desc">@NakamaNetworkbot</div>
             </div>
-            <div class="color-chip">
-              <div class="color-box" style="background:#00D8F6;"></div>
-              <div style="font-size:12px; font-weight:700; color:#fff;">Cyan Accent</div>
-              <div class="mono" style="font-size:11px; color:var(--text-3);">#00D8F6</div>
+            <span style="color:var(--text-3);">&rarr;</span>
+          </a>
+          <a href="/api/catalog" target="_blank" class="admin-action-card">
+            <div>
+              <div class="admin-action-name">Catalog JSON</div>
+              <div class="admin-action-desc">/api/catalog</div>
             </div>
-            <div class="color-chip">
-              <div class="color-box" style="background:#0E121A;"></div>
-              <div style="font-size:12px; font-weight:700; color:#fff;">Deep Space Navy</div>
-              <div class="mono" style="font-size:11px; color:var(--text-3);">#0E121A</div>
+            <span style="color:var(--text-3);">&rarr;</span>
+          </a>
+          <a href="/api/news" target="_blank" class="admin-action-card">
+            <div>
+              <div class="admin-action-name">The Pulse Feed</div>
+              <div class="admin-action-desc">/api/news</div>
+            </div>
+            <span style="color:var(--text-3);">&rarr;</span>
+          </a>
+          <a href="/health" target="_blank" class="admin-action-card">
+            <div>
+              <div class="admin-action-name">Health Status</div>
+              <div class="admin-action-desc">/health</div>
+            </div>
+            <span style="color:var(--text-3);">&rarr;</span>
+          </a>
+          <a href="https://github.com/191405/nakama-telegram-bot" target="_blank" rel="noopener" class="admin-action-card">
+            <div>
+              <div class="admin-action-name">GitHub Repo</div>
+              <div class="admin-action-desc">191405/nakama-telegram-bot</div>
+            </div>
+            <span style="color:var(--text-3);">&rarr;</span>
+          </a>
+        </div>
+
+        <!-- Official Brand Assets & Identity Section -->
+        <div class="admin-brand-section">
+          <div class="admin-brand-header">
+            <span class="admin-brand-title">Official Brand Assets & Identity</span>
+            <span class="badge badge-quality mono">Production Kit</span>
+          </div>
+
+          <div class="admin-brand-grid">
+            <!-- Logo Preview & Downloads -->
+            <div class="admin-logo-preview-box">
+              <svg id="officialSvgPreview" viewBox="0 0 512 512" fill="none">
+                <defs>
+                  <radialGradient id="bgGradPreview" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+                    <stop offset="0%" stop-color="#1A2234"/>
+                    <stop offset="100%" stop-color="#090B10"/>
+                  </radialGradient>
+                  <linearGradient id="crimsonGradPreview" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#FF2A4B"/>
+                    <stop offset="100%" stop-color="#D3081E"/>
+                  </linearGradient>
+                  <linearGradient id="cyanGradPreview" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00F0FF"/>
+                    <stop offset="100%" stop-color="#0080FF"/>
+                  </linearGradient>
+                </defs>
+                <rect width="512" height="512" rx="128" fill="url(#bgGradPreview)"/>
+                <rect width="508" height="508" x="2" y="2" rx="126" fill="none" stroke="rgba(255, 255, 255, 0.12)" stroke-width="4"/>
+                <path d="M128 384 L128 128 L192 128 L192 384 Z" fill="url(#crimsonGradPreview)"/>
+                <path d="M192 128 L320 384 L384 384 L256 128 Z" fill="url(#crimsonGradPreview)"/>
+                <path d="M320 384 L320 128 L384 128 L384 384 Z" fill="url(#crimsonGradPreview)"/>
+                <circle cx="384" cy="128" r="28" fill="url(#cyanGradPreview)"/>
+                <circle cx="384" cy="128" r="14" fill="#FFFFFF"/>
+              </svg>
+              <div>
+                <div style="font-size:14px; font-weight:700; color:#fff;">Nakama Vector Emblem</div>
+                <div style="font-size:12px; color:var(--text-3); margin-top:2px;">512x512 Master Vector</div>
+              </div>
+              <div style="display:flex; gap:8px; width:100%; justify-content:center;">
+                <a href="/assets/logo.svg" download="nakama-logo.svg" class="btn btn-primary" style="flex:1; font-size:12px; padding:8px 12px;">
+                  Download SVG
+                </a>
+                <button id="downloadPngBtn" class="btn btn-secondary" style="flex:1; font-size:12px; padding:8px 12px;">
+                  Download PNG
+                </button>
+              </div>
+            </div>
+
+            <!-- Design Tokens / Palette -->
+            <div>
+              <h3 style="font-size:14px; font-weight:700; color:#fff; margin-bottom:12px;">Official Color Tokens</h3>
+              <div class="palette-grid">
+                <div class="color-chip">
+                  <div class="color-box" style="background:#E50914;"></div>
+                  <div class="color-name">Crimson Primary</div>
+                  <div class="color-hex">#E50914</div>
+                </div>
+                <div class="color-chip">
+                  <div class="color-box" style="background:#00D8F6;"></div>
+                  <div class="color-name">Cyan Accent</div>
+                  <div class="color-hex">#00D8F6</div>
+                </div>
+                <div class="color-chip">
+                  <div class="color-box" style="background:#07090E;"></div>
+                  <div class="color-name">Void Background</div>
+                  <div class="color-hex">#07090E</div>
+                </div>
+                <div class="color-chip">
+                  <div class="color-box" style="background:#0E121A;"></div>
+                  <div class="color-name">Surface Slate</div>
+                  <div class="color-hex">#0E121A</div>
+                </div>
+              </div>
+
+              <h3 style="font-size:14px; font-weight:700; color:#fff; margin:24px 0 8px 0;">Brand Typography & Guidelines</h3>
+              <p style="font-size:12px; color:var(--text-2); line-height:1.6;">
+                The primary display typeface is <strong>Plus Jakarta Sans</strong>, paired with <strong>JetBrains Mono</strong> for media telemetry, episode numbers, and file identifiers. The crimson mark represents passion and streaming momentum, balanced by the cyan telemetry node.
+              </p>
             </div>
           </div>
         </div>
+
+        <!-- Series Catalog Breakdown Table -->
+        <div class="section-head" style="margin-top:0;">
+          <div class="section-head-left">
+            <span class="section-title">Series Catalog Inventory</span>
+            <span class="section-tag mono">Database Breakdown</span>
+          </div>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Series Title</th>
+                <th style="width:140px; text-align:center;">Episodes</th>
+                <th style="width:140px; text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminSeriesTableBody">
+              <tr><td colspan="3" style="text-align:center; padding:32px; color:var(--text-3);">Loading catalog breakdown...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
       </div>
+
     </div>
   </main>
 
-  <!-- ─── PROFESSIONAL REDESIGNED FOOTER ───────────────────────────────── -->
+  <!-- ─── Footer ───────────────────────────────────────────────────────── -->
   <footer class="footer">
     <div class="container">
       <div class="footer-top">
         <div class="footer-brand">
           <div style="display:flex; align-items:center; gap:10px;">
-            <svg width="28" height="28" viewBox="0 0 512 512" fill="none">
+            <svg width="26" height="26" viewBox="0 0 512 512" fill="none">
               <rect width="512" height="512" rx="120" fill="#141A24" stroke="rgba(255, 255, 255, 0.12)" stroke-width="8"/>
               <path d="M128 384V128h64v256z" fill="#E50914"/>
               <path d="M192 128l128 256h64L256 128z" fill="#E50914"/>
               <path d="M320 384V128h64v256z" fill="#E50914"/>
               <circle cx="384" cy="128" r="28" fill="#00D8F6"/>
             </svg>
-            <span style="font-size:15px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#fff;">Nakama Network</span>
+            <span style="font-size:14px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#fff;">Nakama Network</span>
           </div>
           <p class="footer-tagline">
-            High-fidelity anime and donghua streaming network. Experience bufferless 1080p Web-DL playback, multi-track subtitles, and instant Telegram media retrieval.
+            Curated anime and donghua streaming network. Stream high-fidelity series directly in your browser or retrieve episodes via Telegram.
           </p>
-          <div class="footer-status-badge">
-            All Systems Operational &bull; Edge Gateway Active
-          </div>
         </div>
 
         <div>
@@ -1049,8 +1104,7 @@
           <ul class="footer-links">
             <li><a href="#/" class="footer-link">Home</a></li>
             <li><a href="#/browse" class="footer-link">Browse Library</a></li>
-            <li><a href="#/news" class="footer-link">AutoNews Wire</a></li>
-            <li><a href="#/brand" class="footer-link">Brand Assets & Logo</a></li>
+            <li><a href="#/pulse" class="footer-link">The Pulse</a></li>
             <li><a href="https://t.me/NakamaNetworkbot" target="_blank" rel="noopener" class="footer-link">Telegram Bot</a></li>
           </ul>
         </div>
@@ -1058,11 +1112,9 @@
         <div>
           <h4 class="footer-col-title">Platform</h4>
           <ul class="footer-links">
-            <li><span class="footer-link" style="cursor:default;">RFC 7233 Byte Seeking</span></li>
-            <li><span class="footer-link" style="cursor:default;">Matroska Subtitle Container</span></li>
-            <li><span class="footer-link" style="cursor:default;">MTProto Media Pipeline</span></li>
+            <li><a href="#/admin" class="footer-link">Admin Dashboard</a></li>
             <li><a href="/api/catalog" target="_blank" class="footer-link">Public Catalog API</a></li>
-            <li><a href="/health" target="_blank" class="footer-link">Health Check</a></li>
+            <li><a href="/health" target="_blank" class="footer-link">System Health Check</a></li>
           </ul>
         </div>
       </div>
@@ -1083,7 +1135,7 @@
   <!-- Hidden Canvas for Logo PNG Generation -->
   <canvas id="logoCanvas" width="512" height="512" style="display:none;"></canvas>
 
-  <!-- ─── Application Logic & Multi-Page Router ────────────────────────── -->
+  <!-- ─── Application Logic ────────────────────────────────────────────── -->
   <script>
     let catalog = [];
     let latestReleases = [];
@@ -1136,11 +1188,12 @@
         setActivePage('page-browse');
         if (catalog.length === 0) await loadCatalog();
         renderBrowse();
-      } else if (hash === '#/news') {
-        setActivePage('page-news');
-        await loadNews();
-      } else if (hash === '#/brand') {
-        setActivePage('page-brand');
+      } else if (hash === '#/pulse' || hash === '#/news') {
+        setActivePage('page-pulse');
+        await loadPulse();
+      } else if (hash === '#/admin' || hash === '#/brand') {
+        setActivePage('page-admin');
+        initAdminView();
       } else if (hash.startsWith('#/anime/')) {
         const seriesName = decodeURIComponent(hash.replace('#/anime/', ''));
         setActivePage('page-series');
@@ -1159,186 +1212,275 @@
     window.addEventListener('hashchange', handleRoute);
     window.addEventListener('load', handleRoute);
 
-    // --- Catalog Loading ---
+    // --- AniList Metadata Enrichment Cache ---
+    const anilistCache = {};
+
+    async function fetchAniListMeta(title) {
+      const cleanTitle = title.replace(/\b(1080p|720p|x264|x265|HEVC|AAC|Web-DL|BluRay)\b/gi, '').trim();
+      if (anilistCache[cleanTitle]) return anilistCache[cleanTitle];
+
+      const query = `
+        query ($search: String) {
+          Media(search: $search, type: ANIME) {
+            id
+            title { romaji english native }
+            bannerImage
+            coverImage { extraLarge large medium }
+            description(asHtml: false)
+            averageScore
+            episodes
+            status
+            genres
+            seasonYear
+          }
+        }
+      `;
+
+      try {
+        const res = await fetch('https://graphql.anilist.co', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ query, variables: { search: cleanTitle } })
+        });
+        const data = await res.json();
+        if (data && data.data && data.data.Media) {
+          anilistCache[cleanTitle] = data.data.Media;
+          return data.data.Media;
+        }
+      } catch (err) {
+        console.warn('AniList lookup notice:', err);
+      }
+      return null;
+    }
+
+    // --- Catalog Ingestion ---
     async function loadCatalog() {
       try {
         const res = await fetch('/api/catalog');
         const data = await res.json();
         if (data.status === 'ok') {
-          catalog = data.catalog || [];
+          catalog = data.series || [];
           latestReleases = data.latest_releases || [];
           renderHome();
         }
       } catch (err) {
-        if ($('homeCatalogGrid')) {
-          $('homeCatalogGrid').innerHTML = '<div class="empty-state">Unable to connect to media catalog.</div>';
+        console.error('Error fetching catalog:', err);
+      }
+    }
+
+    // --- Render Home Page ---
+    function renderHome() {
+      // 1. Latest Released Episodes
+      const relContainer = $('latestReleasesGrid');
+      if (relContainer) {
+        if (!latestReleases || latestReleases.length === 0) {
+          relContainer.innerHTML = '<div class="empty-state">No recent episodes found.</div>';
+        } else {
+          relContainer.innerHTML = latestReleases.slice(0, 6).map(ep => `
+            <a href="#/watch/${ep.id}/${encodeURIComponent(ep.series)}" class="release-card">
+              <img class="release-thumb" src="${ep.poster || 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/default.jpg'}" alt="Thumb" loading="lazy">
+              <div class="release-info">
+                <div class="release-series truncate">${esc(ep.series)}</div>
+                <div class="release-ep">Episode ${ep.episode}</div>
+                <div class="release-meta mono">
+                  <span>${ep.size}</span>
+                  <span>&bull;</span>
+                  <span>1080p</span>
+                </div>
+              </div>
+              <span class="release-btn">Stream &rarr;</span>
+            </a>
+          `).join('');
         }
       }
-    }
 
-    // --- Dynamic Hero Cycler ---
-    function startHeroCycler() {
-      if (heroCycleInterval) clearInterval(heroCycleInterval);
-      if (catalog.length <= 1) return;
-
-      heroCycleInterval = setInterval(() => {
-        heroIndex = (heroIndex + 1) % Math.min(catalog.length, 5);
-        applyHero(catalog[heroIndex]);
-      }, 8000);
-    }
-
-    function applyHero(hero) {
-      if (!hero) return;
-      const banner = hero.banner_image || hero.cover_image;
-      if (banner) {
-        $('heroBackdrop').style.backgroundImage = `url('${banner}')`;
-      }
-      $('heroTitle').textContent = hero.display_title || hero.name;
-      $('heroDesc').textContent = hero.description || `High-fidelity 1080p release of ${hero.name}. ${hero.total_episodes} full episodes available in the vault.`;
-      $('heroStatus').textContent = hero.status || 'AVAILABLE';
-      $('heroScore').innerHTML = hero.score ? `&#9733; ${(hero.score / 10).toFixed(1)} SCORE` : 'HIGH DEFINITION';
-      $('heroWatchBtn').onclick = () => navigate(`#/anime/${encodeURIComponent(hero.name)}`);
-    }
-
-    // --- Render Home ---
-    function renderHome() {
-      if (catalog.length > 0) {
-        applyHero(catalog[0]);
+      // 2. Curated Library Posters
+      const catContainer = $('homeCatalogGrid');
+      if (catContainer) {
+        if (!catalog || catalog.length === 0) {
+          catContainer.innerHTML = '<div class="empty-state">No series indexed yet.</div>';
+        } else {
+          catContainer.innerHTML = catalog.map(item => renderPosterCard(item)).join('');
+        }
       }
 
-      // Stats
-      if ($('statSeries')) $('statSeries').textContent = `${catalog.length} Series`;
-      const totalEps = catalog.reduce((sum, c) => sum + (c.total_episodes || 0), 0);
-      if ($('statEpisodes')) $('statEpisodes').textContent = `${totalEps} Episodes`;
-      if ($('seriesCount')) $('seriesCount').textContent = `${catalog.length} Available`;
-
-      // Latest Releases Feed (Animepahe style)
-      if ($('latestReleasesGrid')) {
-        $('latestReleasesGrid').innerHTML = latestReleases.slice(0, 9).map(item => `
-          <div class="release-card" onclick="navigate('#/anime/${encodeURIComponent(item.series)}')">
-            <div class="release-thumb">
-              ${item.cover_image ? `<img src="${item.cover_image}" alt="${esc(item.display_title)}" loading="lazy">` : ''}
-            </div>
-            <div class="release-body">
-              <div>
-                <div class="release-title line-clamp-2">${esc(item.display_title || item.series)}</div>
-                <div class="release-ep mono">Episode ${item.episode}</div>
-              </div>
-              <div class="release-foot mono">
-                <span>${item.size || '1080p'}</span>
-                <span style="color:var(--crimson); font-weight:700;">Stream &rarr;</span>
-              </div>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      // Home Trending Grid
-      if ($('homeCatalogGrid')) {
-        $('homeCatalogGrid').innerHTML = catalog.map(item => renderPosterCard(item)).join('');
-      }
+      // Enrich catalog cards with AniList
+      enrichCatalogMetadata();
     }
 
     function renderPosterCard(item) {
-      const isCompleted = item.status === 'COMPLETED';
+      const poster = item.poster || 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/default.jpg';
+      const title = esc(item.display_title || item.name);
+      const score = item.score ? (item.score / 10).toFixed(1) : '7.8';
+      const status = item.status || 'COMPLETED';
+
       return `
-        <div class="poster-card" onclick="navigate('#/anime/${encodeURIComponent(item.name)}')">
-          <div class="poster-media">
-            ${item.cover_image ? `<img src="${item.cover_image}" alt="${esc(item.display_title)}" loading="lazy">` : `<div style="padding:20px; font-size:12px;" class="mono text-slate-500">${esc(item.name)}</div>`}
-            <div class="poster-overlay"></div>
-            <div class="poster-tag-top">
-              <span class="badge ${isCompleted ? 'tag-status-done' : 'tag-status-air'}">${item.status}</span>
-              <span class="badge tag-fhd mono">1080p</span>
+        <a href="#/anime/${encodeURIComponent(item.name)}" class="poster-card" data-series="${esc(item.name)}">
+          <div class="poster-wrap">
+            <img class="poster-img" src="${poster}" alt="${title}" loading="lazy">
+            <div class="poster-badges">
+              <span class="poster-tag tag-status mono">${status}</span>
+              <span class="poster-tag tag-quality mono">1080P</span>
             </div>
-            <div class="poster-tag-bottom">
-              <span class="poster-ep-count mono">EP ${item.total_episodes}</span>
-              ${item.score ? `<span class="poster-star-score mono">&#9733; ${(item.score/10).toFixed(1)}</span>` : ''}
+            <div class="poster-footer-bar">
+              <span class="poster-ep-count mono">EP ${item.episodes}</span>
+              <span class="poster-rating mono">&#9733; ${score}</span>
             </div>
           </div>
-          <div class="poster-meta">
-            <div class="poster-title line-clamp-2">${esc(item.display_title || item.name)}</div>
-            <div class="poster-sub mono">${item.year ? item.year : 'Vault'} &bull; ${item.genres && item.genres.length ? item.genres[0] : 'Anime'}</div>
+          <div class="poster-details">
+            <div class="poster-title truncate">${title}</div>
+            <div class="poster-sub mono">
+              <span>${item.year || '2026'}</span>
+              <span>&bull;</span>
+              <span class="truncate">${esc((item.genres && item.genres[0]) || 'Action')}</span>
+            </div>
           </div>
-        </div>
+        </a>
       `;
     }
 
-    // --- Render Browse Page ---
+    async function enrichCatalogMetadata() {
+      for (const item of catalog) {
+        if (!item._enriched) {
+          item._enriched = true;
+          const meta = await fetchAniListMeta(item.name);
+          if (meta) {
+            item.poster = meta.coverImage.extraLarge || meta.coverImage.large;
+            item.banner = meta.bannerImage || item.poster;
+            item.display_title = meta.title.english || meta.title.romaji || item.name;
+            item.score = meta.averageScore;
+            item.synopsis = meta.description;
+            item.genres = meta.genres || ['Action'];
+            item.year = meta.seasonYear || 2026;
+            item.status = meta.status || 'COMPLETED';
+
+            // Update DOM card
+            const el = document.querySelector(`.poster-card[data-series="${CSS.escape(item.name)}"]`);
+            if (el) {
+              const img = el.querySelector('.poster-img');
+              if (img && item.poster) img.src = item.poster;
+              const titleEl = el.querySelector('.poster-title');
+              if (titleEl) titleEl.textContent = item.display_title;
+              const ratingEl = el.querySelector('.poster-rating');
+              if (ratingEl && item.score) ratingEl.innerHTML = `&#9733; ${(item.score/10).toFixed(1)}`;
+            }
+          }
+        }
+      }
+      updateHeroSpotlight();
+    }
+
+    // --- Hero Spotlight Cycler ---
+    function startHeroCycler() {
+      if (heroCycleInterval) clearInterval(heroCycleInterval);
+      updateHeroSpotlight();
+      heroCycleInterval = setInterval(() => {
+        if (catalog.length > 0) {
+          heroIndex = (heroIndex + 1) % catalog.length;
+          updateHeroSpotlight();
+        }
+      }, 9000);
+    }
+
+    function updateHeroSpotlight() {
+      if (!catalog || catalog.length === 0) return;
+      const cur = catalog[heroIndex % catalog.length];
+      if (!cur) return;
+
+      const title = cur.display_title || cur.name;
+      const desc = cur.synopsis
+        ? cur.synopsis.replace(/<[^>]*>?/gm, '').trim()
+        : `Watch complete episodes of ${cur.name} in 1080p Web-DL with multi-track audio and high-fidelity seeking.`;
+      const bg = cur.banner || cur.poster || 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/176496-Wj4jQx7rL8q3.jpg';
+      const score = cur.score ? (cur.score / 10).toFixed(1) : '8.6';
+
+      $('heroTitle').textContent = title;
+      $('heroDesc').textContent = desc;
+      $('heroBackdrop').style.backgroundImage = `url('${bg}')`;
+      $('heroScore').innerHTML = `&#9733; ${score} SCORE`;
+      $('heroStatus').textContent = cur.status === 'RELEASING' ? 'AIRING NOW' : 'COMPLETED SERIES';
+
+      $('heroWatchBtn').onclick = () => {
+        navigate(`#/anime/${encodeURIComponent(cur.name)}`);
+      };
+    }
+
+    // --- Browse Page ---
     function renderBrowse() {
+      const container = $('browseGrid');
+      if (!container) return;
+
       let filtered = [...catalog];
 
-      // Genre filter
       if (activeGenre !== 'ALL') {
-        filtered = filtered.filter(item => (item.genres || []).some(g => g.toLowerCase() === activeGenre.toLowerCase()));
+        filtered = filtered.filter(item => item.genres && item.genres.includes(activeGenre));
       }
 
-      // Status filter
       if (activeStatus !== 'ALL') {
-        filtered = filtered.filter(item => item.status === activeStatus);
+        filtered = filtered.filter(item => (item.status || 'COMPLETED').toUpperCase() === activeStatus);
       }
 
-      // Sort
       if (activeSort === 'rating') {
         filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
       } else if (activeSort === 'episodes') {
-        filtered.sort((a, b) => (b.total_episodes || 0) - (a.total_episodes || 0));
+        filtered.sort((a, b) => b.episodes - a.episodes);
       } else if (activeSort === 'title') {
         filtered.sort((a, b) => (a.display_title || a.name).localeCompare(b.display_title || b.name));
-      } else {
-        filtered.sort((a, b) => (b.total_downloads || 0) - (a.total_downloads || 0));
       }
 
-      $('browseGrid').innerHTML = filtered.length
-        ? filtered.map(item => renderPosterCard(item)).join('')
-        : '<div class="empty-state" style="grid-column: 1/-1;">No anime match the selected filters.</div>';
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">No series matched your active filter.</div>';
+      } else {
+        container.innerHTML = filtered.map(item => renderPosterCard(item)).join('');
+      }
     }
 
-    // Genre filter events
-    document.querySelectorAll('#genreFilterGroup .filter-pill').forEach(btn => {
+    // Genre filter pills listener
+    document.querySelectorAll('#genrePills .filter-pill').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        document.querySelectorAll('#genreFilterGroup .filter-pill').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        activeGenre = btn.getAttribute('data-genre');
+        document.querySelectorAll('#genrePills .filter-pill').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        activeGenre = e.target.getAttribute('data-genre');
         renderBrowse();
       });
     });
 
-    if ($('sortFilterSelect')) {
-      $('sortFilterSelect').addEventListener('change', (e) => {
+    if ($('sortSelect')) {
+      $('sortSelect').addEventListener('change', (e) => {
         activeSort = e.target.value;
         renderBrowse();
       });
     }
 
-    if ($('statusFilterSelect')) {
-      $('statusFilterSelect').addEventListener('change', (e) => {
+    if ($('statusSelect')) {
+      $('statusSelect').addEventListener('change', (e) => {
         activeStatus = e.target.value;
         renderBrowse();
       });
     }
 
-    // --- AutoNews Service ---
-    async function loadNews() {
+    // --- The Pulse News Service ---
+    async function loadPulse() {
       try {
-        $('newsCardsGrid').innerHTML = '<div class="empty-state">Fetching real-time anime industry wire...</div>';
+        $('newsCardsGrid').innerHTML = '<div class="empty-state">Loading latest industry dispatches...</div>';
         const res = await fetch('/api/news');
         const data = await res.json();
         if (data.status === 'ok' && data.articles) {
           newsArticles = data.articles;
-          renderNews();
+          renderPulse();
         }
       } catch (err) {
-        $('newsCardsGrid').innerHTML = '<div class="empty-state">Unable to load automated news feed.</div>';
+        $('newsCardsGrid').innerHTML = '<div class="empty-state">Unable to load news feed at this time.</div>';
       }
     }
 
     if ($('refreshNewsBtn')) {
-      $('refreshNewsBtn').addEventListener('click', loadNews);
+      $('refreshNewsBtn').addEventListener('click', loadPulse);
     }
 
-    function renderNews() {
+    function renderPulse() {
       if (!newsArticles || newsArticles.length === 0) {
-        $('newsCardsGrid').innerHTML = '<div class="empty-state">No news articles found.</div>';
+        $('newsCardsGrid').innerHTML = '<div class="empty-state">No news dispatches found.</div>';
         return;
       }
 
@@ -1357,7 +1499,7 @@
             <p class="editorial-desc">${esc(heroArticle.summary)}</p>
             <div>
               <a href="${esc(heroArticle.url)}" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:12px;">
-                Read Source Coverage &rarr;
+                Read Full Story &rarr;
               </a>
             </div>
           </div>
@@ -1370,63 +1512,79 @@
         <article class="news-card">
           <div>
             <div class="news-meta-row">
-              <span class="news-category mono">${esc(art.category || 'Anime')}</span>
-              <span class="news-date mono">${esc(art.published_at || 'Recent')}</span>
+              <span class="news-category mono">${esc(art.category || 'News')}</span>
+              <span class="news-time mono">${esc(art.published_at)}</span>
             </div>
             <h3 class="news-title">${esc(art.title)}</h3>
-            <p class="news-excerpt">${esc(art.summary)}</p>
+            <p class="news-snippet line-clamp-3">${esc(art.summary)}</p>
           </div>
-          <div class="news-card-foot">
-            <span class="news-source-tag">${esc(art.source || 'Anime News Network')}</span>
-            <a href="${esc(art.url)}" target="_blank" rel="noopener" class="btn btn-secondary" style="padding:4px 10px; font-size:11px;">
-              Read &rarr;
+          <div>
+            <a href="${esc(art.url)}" target="_blank" rel="noopener" class="news-action">
+              Read Story &rarr;
             </a>
           </div>
         </article>
       `).join('');
     }
 
-    // --- Series Detail Page ---
+    // --- Anime Detail Page ---
     async function loadSeriesDetail(seriesName) {
+      $('seriesTitle').textContent = decodeURIComponent(seriesName);
+      $('seriesSubTitle').textContent = 'Loading series data...';
+      $('seriesSynopsis').textContent = 'Retrieving metadata and episode list...';
+      $('hubPillsGrid').innerHTML = '';
+      $('hubEpisodesList').innerHTML = '<div class="empty-state">Loading episodes...</div>';
+
       try {
         const res = await fetch(`/api/series/${encodeURIComponent(seriesName)}`);
         const data = await res.json();
-        if (!data || (!data.episodes && data.status !== 'ok')) {
+        if (data.status !== 'ok') {
           $('seriesTitle').textContent = 'Series not found';
           return;
         }
+
         currentSeriesData = data;
+        const meta = await fetchAniListMeta(seriesName);
 
-        $('seriesBannerImg').src = data.banner_image || data.cover_image || '';
-        $('seriesCoverImg').src = data.cover_image || '';
+        const title = meta && meta.title ? (meta.title.english || meta.title.romaji || data.series) : data.series;
+        const romaji = meta && meta.title ? meta.title.romaji : '';
+        const cover = meta && meta.coverImage ? (meta.coverImage.extraLarge || meta.coverImage.large) : 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/default.jpg';
+        const banner = meta && meta.bannerImage ? meta.bannerImage : cover;
+        const desc = meta && meta.description ? meta.description.replace(/<[^>]*>?/gm, '').trim() : 'Curated anime release from the Nakama decentralized vault.';
+        const score = meta && meta.averageScore ? (meta.averageScore / 10).toFixed(1) : '8.2';
+        const status = meta && meta.status ? meta.status : 'COMPLETED';
+        const genres = meta && meta.genres ? meta.genres : ['Action', 'Fantasy'];
 
-        $('seriesTitle').textContent = data.display_title || data.series;
-        $('seriesSubTitle').textContent = data.series;
-        $('seriesSynopsis').textContent = data.description || 'No synopsis provided for this anime.';
+        $('seriesTitle').textContent = title;
+        $('seriesSubTitle').textContent = romaji;
+        $('seriesCoverImg').src = cover;
+        $('seriesBannerImg').src = banner;
+        $('seriesSynopsis').textContent = desc;
+        $('hubEpCount').textContent = `${data.episodes.length} Episodes`;
 
-        const chips = [];
-        if (data.year) chips.push(`<span class="meta-chip mono">${data.year}</span>`);
-        if (data.score) chips.push(`<span class="meta-chip meta-chip-score mono">&#9733; ${(data.score/10).toFixed(1)} / 10</span>`);
-        const airing = data.airing_status || (data.status !== 'ok' ? data.status : null) || 'Ongoing';
-        chips.push(`<span class="meta-chip meta-chip-cyan">${esc(airing)}</span>`);
-        (data.genres || []).forEach(g => chips.push(`<span class="meta-chip">${esc(g)}</span>`));
-        $('seriesMetaBar').innerHTML = chips.join('');
+        // Metadata badges
+        $('seriesMetaBar').innerHTML = `
+          <span class="meta-chip meta-chip-score mono">&#9733; ${score} SCORE</span>
+          <span class="meta-chip mono">${status}</span>
+          <span class="meta-chip meta-chip-cyan mono">1080P WEB-DL</span>
+          <span class="meta-chip mono">${data.episodes.length} EPISODES</span>
+          ${genres.map(g => `<span class="meta-chip">${g}</span>`).join('')}
+        `;
 
-        if (data.episodes && data.episodes.length > 0) {
-          $('playFirstBtn').style.display = '';
-          $('playFirstBtn').onclick = () => navigate(`#/watch/${data.episodes[0].id}/${encodeURIComponent(data.series)}`);
-        } else {
-          $('playFirstBtn').style.display = 'none';
+        if (data.episodes.length > 0) {
+          $('playFirstBtn').onclick = () => {
+            navigate(`#/watch/${data.episodes[0].id}/${encodeURIComponent(data.series)}`);
+          };
         }
-        $('batchTgLink').href = `https://t.me/NakamaNetworkbot?start=search_${encodeURIComponent(data.series)}`;
 
-        $('hubEpCount').textContent = `${data.total_episodes} episodes in vault`;
+        $('batchTgLink').href = `https://t.me/NakamaNetworkbot?start=series_${encodeURIComponent(data.series)}`;
 
         // Numbered pill grid
         $('hubPillsGrid').innerHTML = data.episodes.map(ep => `
           <button 
             onclick="navigate('#/watch/${ep.id}/${encodeURIComponent(data.series)}')" 
             class="ep-pill mono"
+            title="Episode ${ep.episode}"
           >
             ${ep.episode}
           </button>
@@ -1497,6 +1655,73 @@
             </button>
           `).join('');
         }
+      }
+    }
+
+    // --- Admin Dashboard & Brand Control ---
+    const ADMIN_PIN = "191405";
+
+    function isUserAdmin() {
+      return localStorage.getItem('nakama_admin_auth') === '1';
+    }
+
+    function initAdminView() {
+      if (isUserAdmin()) {
+        $('adminGateView').style.display = 'none';
+        $('adminAuthView').style.display = 'block';
+        loadAdminStats();
+      } else {
+        $('adminGateView').style.display = 'block';
+        $('adminAuthView').style.display = 'none';
+        $('adminGateError').style.display = 'none';
+        $('adminPinInput').value = '';
+        setTimeout(() => $('adminPinInput').focus(), 100);
+      }
+    }
+
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const pin = $('adminPinInput').value.trim();
+      if (pin === ADMIN_PIN) {
+        localStorage.setItem('nakama_admin_auth', '1');
+        initAdminView();
+      } else {
+        $('adminGateError').style.display = 'block';
+        $('adminPinInput').select();
+      }
+    }
+
+    function handleAdminLogout() {
+      localStorage.removeItem('nakama_admin_auth');
+      initAdminView();
+    }
+
+    async function loadAdminStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        const data = await res.json();
+        if (data.status === 'ok') {
+          $('admStatSeries').textContent = `${data.total_series} Series`;
+          $('admStatEpisodes').textContent = `${data.total_episodes} Files`;
+          $('admStatDownloads').textContent = `${data.total_downloads} Served`;
+          $('admStatStorage').textContent = `${data.total_size_gb} GB`;
+
+          if (data.series_breakdown) {
+            $('adminSeriesTableBody').innerHTML = data.series_breakdown.map(s => `
+              <tr>
+                <td style="font-weight:700;">${esc(s.name)}</td>
+                <td style="text-align:center;" class="mono">${s.episodes} eps</td>
+                <td style="text-align:right;">
+                  <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px;" onclick="navigate('#/anime/${encodeURIComponent(s.name)}')">
+                    Inspect &rarr;
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching admin stats:', err);
       }
     }
 
