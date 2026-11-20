@@ -21,16 +21,20 @@ from bot.db.models import File
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("sync_vault")
 
-STORAGE_CHANNEL = -1001985886914
-
-
 async def main():
+    if not settings.bot_token or not settings.storage_channel:
+        logger.error("BOT_TOKEN and STORAGE_CHANNEL must be configured to sync the vault.")
+        return
+
+    storage_channel = int(settings.storage_channel)
     bot = Bot(token=settings.bot_token)
     logger.info("Starting storage vault sync...")
 
     async with async_session() as session:
         result = await session.execute(
-            select(File).where(File.channel_message_id.is_(None)).order_id(File.id) if hasattr(select(File), 'order_id') else select(File).where(File.channel_message_id.is_(None)).order_by(File.id)
+            select(File)
+            .where(File.channel_message_id.is_(None))
+            .order_by(File.id)
         )
         pending_files = list(result.scalars().all())
 
@@ -45,7 +49,7 @@ async def main():
                 
                 # Send via Bot API
                 msg = await bot.send_document(
-                    chat_id=STORAGE_CHANNEL,
+                    chat_id=storage_channel,
                     document=file_record.file_id,
                     caption=caption[:1024]
                 )

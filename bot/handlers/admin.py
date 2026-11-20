@@ -814,7 +814,7 @@ def _extract_file_info(message: Message) -> dict | None:
 @router.message(Command("post_channel", "broadcast_card"))
 async def cmd_post_channel(message: Message, session: AsyncSession) -> None:
     """Manually broadcast a stylish ongoing anime release card to the updates channel."""
-    if not (message.from_user and message.from_user.id in settings.admin_ids):
+    if not (message.from_user and message.from_user.id in settings.admin_id_list):
         return
 
     parts = (message.text or "").split(maxsplit=1)

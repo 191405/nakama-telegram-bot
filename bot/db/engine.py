@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from sqlalchemy import event, text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -58,44 +60,88 @@ async_session = async_sessionmaker(
 )
 
 
+logger = logging.getLogger(__name__)
+
+# Forward-only, idempotent schema migrations. Each entry is
+# (name, table, column, SQL). Applied versions are tracked in the database so
+# failures are logged and never silently swallowed.
+MIGRATIONS: list[tuple[str, str, str, str]] = [
+    (
+        "001_user_persona",
+        "users",
+        "persona",
+        "ALTER TABLE users ADD COLUMN persona VARCHAR(50) DEFAULT 'nakama'",
+    ),
+    (
+        "002_user_xp",
+        "users",
+        "xp",
+        "ALTER TABLE users ADD COLUMN xp INTEGER DEFAULT 0",
+    ),
+    (
+        "003_file_channel_message_id",
+        "files",
+        "channel_message_id",
+        "ALTER TABLE files ADD COLUMN channel_message_id BIGINT",
+    ),
+]
+
+
+async def _applied_migrations(conn) -> set[str]:
+    await conn.execute(text(
+        "CREATE TABLE IF NOT EXISTS schema_migrations ("
+        "name VARCHAR(255) PRIMARY KEY, "
+        "applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+    ))
+    result = await conn.execute(text("SELECT name FROM schema_migrations"))
+    return {row[0] for row in result.fetchall()}
+
+
+async def _column_exists(conn, table: str, column: str) -> bool:
+    if settings.database_url.startswith("sqlite"):
+        result = await conn.execute(text(f"PRAGMA table_info({table})"))
+        return column in {row[1] for row in result.fetchall()}
+    result = await conn.execute(
+        text(
+            "SELECT 1 FROM information_schema.columns "
+            "WHERE table_name = :table AND column_name = :column"
+        ),
+        {"table": table, "column": column},
+    )
+    return result.first() is not None
+
+
 async def init_db() -> None:
-    """Create all tables and perform safe schema migrations."""
+    """Create tables and apply pending, versioned schema migrations."""
     from bot.db.models import Base
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        # Safe column addition for users and files tables
-        try:
-            if settings.database_url.startswith("sqlite"):
-                cols_res = await conn.execute(text("PRAGMA table_info(users)"))
-                existing_cols = {row[1] for row in cols_res.fetchall()}
-                if "persona" not in existing_cols:
+        applied = await _applied_migrations(conn)
+
+        for name, table, column, ddl in MIGRATIONS:
+            if name in applied:
+                continue
+            try:
+                if await _column_exists(conn, table, column):
+                    # Column predates migration tracking (older deployment):
+                    # record it as already applied instead of duplicating it.
                     await conn.execute(
-                        text("ALTER TABLE users ADD COLUMN persona VARCHAR(50) DEFAULT 'nakama'")
+                        text("INSERT INTO schema_migrations(name) VALUES (:n)"),
+                        {"n": name},
                     )
-                if "xp" not in existing_cols:
-                    await conn.execute(
-                        text("ALTER TABLE users ADD COLUMN xp INTEGER DEFAULT 0")
-                    )
-                # Ensure files table has channel_message_id
-                f_cols = await conn.execute(text("PRAGMA table_info(files)"))
-                f_existing = {row[1] for row in f_cols.fetchall()}
-                if "channel_message_id" not in f_existing:
-                    await conn.execute(
-                        text("ALTER TABLE files ADD COLUMN channel_message_id INTEGER")
-                    )
-            else:
+                    logger.info("Recorded existing column for migration %s", name)
+                    continue
+
+                await conn.execute(text(ddl))
                 await conn.execute(
-                    text("ALTER TABLE users ADD COLUMN IF NOT EXISTS persona VARCHAR(50) DEFAULT 'nakama'")
+                    text("INSERT INTO schema_migrations(name) VALUES (:n)"),
+                    {"n": name},
                 )
-                await conn.execute(
-                    text("ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0")
-                )
-                await conn.execute(
-                    text("ALTER TABLE files ADD COLUMN IF NOT EXISTS channel_message_id BIGINT")
-                )
-        except Exception:
-            pass
+                logger.info("Applied schema migration: %s", name)
+            except Exception:
+                logger.exception("Schema migration '%s' failed", name)
+                raise
 
 
 async def close_db() -> None:

@@ -57,6 +57,13 @@ def main() -> None:
     # 2. Start Telegram Bot
     procs["bot"] = start_process("bot", "Nakama Telegram Bot")
 
+    # 3. Start RSS Sub-Bot Worker only when it is actually configured.
+    #    Otherwise it would exit immediately and be restart-looped forever.
+    if os.getenv("SUB_BOT_TOKEN") and os.getenv("STORAGE_CHANNEL"):
+        procs["worker"] = start_process("worker.rss_sub_bot", "Nakama RSS Sub-Bot")
+    else:
+        logger.info("RSS Sub-Bot skipped (SUB_BOT_TOKEN / STORAGE_CHANNEL not set).")
+
     logger.info("All services initiated successfully.")
 
     # Supervise processes
@@ -69,7 +76,11 @@ def main() -> None:
                     continue
                 logger.warning("Process '%s' exited unexpectedly with code %s. Restarting in 3s...", name, exit_code)
                 time.sleep(3)
-                mod = "server.app" if name == "web" else "bot"
+                mod = {
+                    "web": "server.app",
+                    "bot": "bot",
+                    "worker": "worker.rss_sub_bot",
+                }[name]
                 procs[name] = start_process(mod, name)
 
     # Wait for termination

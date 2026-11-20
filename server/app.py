@@ -9,16 +9,22 @@ High-performance backend service providing:
 from __future__ import annotations
 
 import asyncio
+import base64
+import hashlib
+import hmac
+import json
 import logging
+import mimetypes
 import os
 import re
+import time
 from pathlib import Path
 from typing import Any
 
 from aiohttp import web
 from aiogram import Bot
 from telethon import TelegramClient
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from bot.config import settings
 from bot.db.engine import async_session, init_db
@@ -40,29 +46,116 @@ WEB_ROOT = Path(__file__).parent.parent / "web" / "public"
 
 
 def parse_byte_range(range_header: str | None, total_size: int) -> tuple[int, int]:
-    """Parse HTTP Range header into valid (start, end) byte offsets (RFC 7233)."""
+    """Parse an HTTP Range header into valid (start, end) byte offsets (RFC 7233).
+
+    Malformed or unsatisfiable ranges fall back to the full resource instead of
+    raising, so a bad header never turns into a 500 for the client.
+    """
     if not range_header or not range_header.startswith("bytes="):
         return 0, total_size - 1
 
-    range_val = range_header.replace("bytes=", "").strip()
-    parts = range_val.split("-")
+    try:
+        raw = range_header[6:].strip()
+        if "," in raw:  # only a single range is supported; use the first
+            raw = raw.split(",", 1)[0].strip()
+        start_s, _, end_s = raw.partition("-")
 
-    # Suffix byte range: e.g. bytes=-500 (last 500 bytes)
-    if not parts[0] and len(parts) > 1 and parts[1]:
-        try:
-            suffix_len = int(parts[1])
-            start = max(0, total_size - suffix_len)
-            end = total_size - 1
-            return start, end
-        except ValueError:
-            return 0, total_size - 1
+        # Suffix byte range: e.g. bytes=-500 (last 500 bytes)
+        if not start_s and end_s:
+            suffix_len = int(end_s)
+            if suffix_len <= 0:
+                return 0, total_size - 1
+            return max(0, total_size - suffix_len), total_size - 1
 
-    start = int(parts[0]) if parts[0] else 0
-    end = int(parts[1]) if len(parts) > 1 and parts[1] else total_size - 1
+        start = int(start_s) if start_s else 0
+        end = int(end_s) if end_s else total_size - 1
+        start = max(0, min(start, total_size - 1))
+        end = max(start, min(end, total_size - 1))
+        return start, end
+    except (ValueError, TypeError):
+        return 0, total_size - 1
 
-    start = max(0, min(start, total_size - 1))
-    end = max(start, min(end, total_size - 1))
-    return start, end
+
+def content_type_for(filename: str) -> str:
+    """Best-effort MIME type for a media filename (MKV, MP4, WebM, etc.)."""
+    guessed = mimetypes.guess_type(filename or "")[0]
+    return guessed or "video/mp4"
+
+
+def make_etag(file_record) -> str:
+    """Stable weak validator derived from immutable file identity."""
+    return f'W/"file-{file_record.id}-{int(file_record.file_size or 0)}"'
+
+
+def get_storage_channel_id() -> int:
+    """Resolve the storage channel from configuration; never hardcode an ID."""
+    if not settings.storage_channel:
+        raise RuntimeError("STORAGE_CHANNEL is not configured")
+    try:
+        return int(settings.storage_channel)
+    except (TypeError, ValueError) as exc:
+        raise RuntimeError(f"Invalid STORAGE_CHANNEL: {settings.storage_channel}") from exc
+
+
+def pick_streamer(app: web.Application) -> dict | None:
+    """Round-robin across the MTProto client pool to avoid a single bottleneck."""
+    pool: list[dict] = app.get("telethon_pool") or []
+    if not pool:
+        return None
+    idx = app.get("telethon_idx", 0) % len(pool)
+    app["telethon_idx"] = idx + 1
+    return pool[idx]
+
+
+# --- Admin authentication (HMAC-signed, HttpOnly cookie) ----------------------
+
+ADMIN_COOKIE = "nakama_admin"
+ADMIN_COOKIE_TTL = 86400
+
+
+def _b64e(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+def _b64d(text: str) -> bytes:
+    return base64.urlsafe_b64decode(text + "=" * (-len(text) % 4))
+
+
+def _admin_signature(secret: str, payload: str) -> str:
+    return hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+
+
+def make_admin_cookie(secret: str) -> str:
+    payload = _b64e(
+        json.dumps(
+            {"exp": int(time.time()) + ADMIN_COOKIE_TTL}, separators=(",", ":")
+        ).encode()
+    )
+    return f"{payload}.{_admin_signature(secret, payload)}"
+
+
+def verify_admin_cookie(secret: str, value: str | None) -> bool:
+    if not secret or not value or "." not in value:
+        return False
+    try:
+        payload, signature = value.split(".", 1)
+        if not hmac.compare_digest(_admin_signature(secret, payload), signature):
+            return False
+        expires = int(json.loads(_b64d(payload)).get("exp", 0))
+        return expires > time.time()
+    except Exception:
+        return False
+
+
+def require_admin(request: web.Request) -> None:
+    if not verify_admin_cookie(
+        settings.admin_panel_secret, request.cookies.get(ADMIN_COOKIE)
+    ):
+        raise web.HTTPUnauthorized(text="Admin authentication required")
+
+
+def _secure_cookie(request: web.Request) -> bool:
+    return request.headers.get("X-Forwarded-Proto", request.scheme) == "https"
 
 
 def strip_html(text: str) -> str:
@@ -101,6 +194,37 @@ async def get_series_meta(name: str) -> dict[str, Any]:
 
 
 # --- API Handlers ------------------------------------------------------------
+
+
+async def handle_health(request: web.Request) -> web.Response:
+    """GET /health - liveness/readiness probe used by Docker, Fly.io and the UI."""
+    started_at: float = request.app.get("started_at", 0)
+    db_ok = False
+    db_error: str | None = None
+    try:
+        async with async_session() as session:
+            await session.execute(text("SELECT 1"))
+        db_ok = True
+    except Exception as exc:
+        db_error = str(exc)[:200]
+        logger.error("Health check: database unavailable: %s", exc)
+
+    telethon_ok = bool(
+        request.app.get("telethon_client") and request.app.get("storage_entity")
+    )
+    payload = {
+        "status": "ok" if db_ok else "degraded",
+        "service": "nakama-gateway",
+        "uptime_seconds": int(time.time() - started_at) if started_at else 0,
+        "checks": {
+            "database": {"ok": db_ok, "error": db_error},
+            "mtproto": {
+                "ok": telethon_ok,
+                "mode": "streaming" if telethon_ok else "fallback",
+            },
+        },
+    }
+    return web.json_response(payload, status=200 if db_ok else 503)
 
 
 async def handle_catalog(request: web.Request) -> web.Response:
@@ -228,7 +352,12 @@ async def handle_series_detail(request: web.Request) -> web.Response:
 
 
 async def handle_stream(request: web.Request) -> web.StreamResponse:
-    """GET /stream/{file_id} - HTTP 206 byte-range streaming directly via Telegram MTProto."""
+    """GET /stream/{file_id} - HTTP byte-range streaming via Telegram MTProto.
+
+    Returns 206 only for genuine Range requests; plain GET requests receive a
+    normal 200 full-body response. Conditional headers (If-None-Match,
+    If-Range) are honoured so players can probe and cache efficiently.
+    """
     try:
         file_id = int(request.match_info.get("file_id"))
     except (TypeError, ValueError):
@@ -244,20 +373,56 @@ async def handle_stream(request: web.Request) -> web.StreamResponse:
     if total_size <= 0:
         raise web.HTTPBadRequest(text="File has zero length")
 
+    etag = make_etag(f)
+
+    # aiohttp implicitly registers HEAD alongside GET and calls this same
+    # handler, so answer metadata-only probes here (no body, no MTProto work).
+    if request.method == "HEAD":
+        return web.Response(status=200, headers={
+            "Accept-Ranges": "bytes",
+            "Content-Length": str(int(total_size)),
+            "Content-Type": content_type_for(f.file_name),
+            "ETag": etag,
+            "Cache-Control": "public, max-age=86400",
+        })
+
+    # Conditional request: representation unchanged.
+    if request.headers.get("If-None-Match", "").strip() in (etag, "*"):
+        return web.Response(
+            status=304,
+            headers={"ETag": etag, "Cache-Control": "public, max-age=86400"},
+        )
+
     range_header = request.headers.get("Range")
+    # If-Range: a stale validator means the Range must be ignored (send full body).
+    if range_header and request.headers.get("If-Range") and request.headers["If-Range"].strip() != etag:
+        range_header = None
+
+    is_range = bool(range_header and range_header.startswith("bytes="))
     start, end = parse_byte_range(range_header, total_size)
     chunk_length = end - start + 1
+
+    base_headers: dict[str, str] = {
+        "Accept-Ranges": "bytes",
+        "ETag": etag,
+        "Cache-Control": "public, max-age=86400",
+    }
+    if is_range:
+        base_headers["Content-Range"] = f"bytes {start}-{end}/{total_size}"
+    status = 206 if is_range else 200
+    reason = "Partial Content" if is_range else "OK"
+
+    content_type = content_type_for(f.file_name)
 
     # Option A: Local media file if present on disk
     local_path = Path("media") / f.file_name
     if local_path.exists() and local_path.is_file():
         response = web.StreamResponse(
-            status=206,
-            reason="Partial Content",
+            status=status,
+            reason=reason,
             headers={
-                "Content-Type": "video/mp4",
-                "Accept-Ranges": "bytes",
-                "Content-Range": f"bytes {start}-{end}/{total_size}",
+                **base_headers,
+                "Content-Type": content_type,
                 "Content-Length": str(chunk_length),
             },
         )
@@ -276,9 +441,15 @@ async def handle_stream(request: web.Request) -> web.StreamResponse:
         return response
 
     # Option B: Stream via Telegram MTProto
-    telethon_client: TelegramClient | None = request.app.get("telethon_client")
-    storage_entity = request.app.get("storage_entity")
-    storage_channel_id = int(settings.storage_channel) if settings.storage_channel else -1001985886914
+    try:
+        storage_channel_id = get_storage_channel_id()
+    except RuntimeError as exc:
+        logger.error("Cannot stream: %s", exc)
+        raise web.HTTPInternalServerError(text="Storage channel is not configured")
+
+    streamer = pick_streamer(request.app)
+    telethon_client: TelegramClient | None = streamer["client"] if streamer else request.app.get("telethon_client")
+    storage_entity = streamer["entity"] if streamer else request.app.get("storage_entity")
 
     if not telethon_client or not storage_entity:
         logger.warning("MTProto client not active, redirecting to Telegram deep link.")
@@ -318,21 +489,18 @@ async def handle_stream(request: web.Request) -> web.StreamResponse:
         logger.error("Error retrieving channel message #%s: %s", channel_msg_id, e)
         raise web.HTTPInternalServerError(text="Failed to retrieve media from storage")
 
-    content_type = "video/mp4"
     if f.file_name.lower().endswith(".webm"):
         content_type = "video/webm"
 
     response = web.StreamResponse(
-        status=206,
-        reason="Partial Content",
+        status=status,
+        reason=reason,
         headers={
+            **base_headers,
             "Content-Type": content_type,
-            "Accept-Ranges": "bytes",
-            "Content-Range": f"bytes {start}-{end}/{total_size}",
             "Content-Length": str(chunk_length),
             "Content-Disposition": f'inline; filename="{Path(f.file_name).name}"',
             "Access-Control-Allow-Origin": "*",
-            "Cache-Control": "public, max-age=86400",
         },
     )
     await response.prepare(request)
@@ -357,6 +525,7 @@ async def handle_stream(request: web.Request) -> web.StreamResponse:
 
     await response.write_eof()
     return response
+
 
 
 
@@ -482,8 +651,51 @@ async def handle_news(request: web.Request) -> web.Response:
     })
 
 
+async def handle_admin_login(request: web.Request) -> web.Response:
+    """POST /api/admin/login - exchange the admin secret for a signed cookie."""
+    if not settings.admin_panel_secret:
+        raise web.HTTPServiceUnavailable(text="Admin dashboard is not configured")
+    try:
+        body = await request.json()
+    except Exception:
+        raise web.HTTPBadRequest(text="Invalid JSON body")
+
+    pin = str(body.get("pin", ""))
+    if not hmac.compare_digest(pin, settings.admin_panel_secret):
+        raise web.HTTPUnauthorized(text="Invalid PIN")
+
+    response = web.json_response({"status": "ok"})
+    response.set_cookie(
+        ADMIN_COOKIE,
+        make_admin_cookie(settings.admin_panel_secret),
+        httponly=True,
+        secure=_secure_cookie(request),
+        samesite="Strict",
+        max_age=ADMIN_COOKIE_TTL,
+        path="/",
+    )
+    return response
+
+
+async def handle_admin_logout(request: web.Request) -> web.Response:
+    """POST /api/admin/logout - clear the admin session cookie."""
+    response = web.json_response({"status": "ok"})
+    response.del_cookie(ADMIN_COOKIE, path="/")
+    return response
+
+
+async def handle_admin_session(request: web.Request) -> web.Response:
+    """GET /api/admin/session - lets the UI check whether the cookie is valid."""
+    return web.json_response({
+        "authenticated": verify_admin_cookie(
+            settings.admin_panel_secret, request.cookies.get(ADMIN_COOKIE)
+        )
+    })
+
+
 async def handle_admin_stats(request: web.Request) -> web.Response:
     """GET /api/admin/stats - Aggregate platform statistics for the admin dashboard."""
+    require_admin(request)
     async with async_session() as session:
         files = list((await session.execute(select(File))).scalars().all())
 
@@ -521,6 +733,14 @@ async def serve_index(request: web.Request) -> web.FileResponse:
     return web.Response(text="Nakama Network Gateway running.", content_type="text/plain")
 
 
+async def handle_spa_fallback(request: web.Request) -> web.StreamResponse:
+    """Serve the SPA for real routes, but return JSON 404 for unknown APIs."""
+    path = request.path
+    if path.startswith("/api/") or path.startswith("/stream/") or path == "/health":
+        return web.json_response({"error": "Not found", "path": path}, status=404)
+    return await serve_index(request)
+
+
 # --- App Factory --------------------------------------------------------------
 
 
@@ -528,34 +748,57 @@ async def on_startup(app: web.Application) -> None:
     await init_db()
     logger.info("Database initialized.")
 
-    if settings.telegram_api_id and settings.telegram_api_hash and settings.bot_token:
+    if (
+        settings.telegram_api_id
+        and settings.telegram_api_hash
+        and settings.bot_token
+        and settings.storage_channel
+    ):
+        pool: list[dict] = []
         try:
-            session_name = os.getenv("TELEGRAM_SESSION_PATH", "streamer_bot")
-            if session_name == "streamer_bot" and Path("/data").is_dir():
-                session_name = "/data/streamer_bot"
-            logger.info("Connecting Telethon MTProto client for media streaming (session: %s)...", session_name)
-            client = TelegramClient(session_name, settings.telegram_api_id, settings.telegram_api_hash)
-            await client.start(bot_token=settings.bot_token)
-            app["telethon_client"] = client
+            base_session = os.getenv("TELEGRAM_SESSION_PATH", "streamer_bot")
+            if base_session == "streamer_bot" and Path("/data").is_dir():
+                base_session = "/data/streamer_bot"
+            storage_channel_id = get_storage_channel_id()
+            size = max(1, min(settings.stream_pool_size, 8))
 
-            storage_channel_id = int(settings.storage_channel) if settings.storage_channel else -1001985886914
-            app["storage_entity"] = await client.get_entity(storage_channel_id)
+            for i in range(size):
+                session_name = base_session if size == 1 else f"{base_session}_{i}"
+                logger.info("Connecting MTProto stream client %d/%d (session: %s)...", i + 1, size, session_name)
+                client = TelegramClient(
+                    session_name, settings.telegram_api_id, settings.telegram_api_hash
+                )
+                await client.start(bot_token=settings.bot_token)
+                pool.append({
+                    "client": client,
+                    "entity": await client.get_entity(storage_channel_id),
+                })
+
+            app["telethon_pool"] = pool
+            app["telethon_idx"] = 0
+            # Kept for backwards compatibility with any code reading these keys.
+            app["telethon_client"] = pool[0]["client"]
+            app["storage_entity"] = pool[0]["entity"]
             app["bot"] = Bot(token=settings.bot_token)
-            logger.info("Telethon MTProto connected! Storage channel entity resolved.")
+            logger.info("Telethon MTProto pool ready (%d client(s)).", len(pool))
         except Exception as e:
-            logger.error("Failed to connect Telethon MTProto client: %s", e)
+            logger.error("Failed to connect Telethon MTProto pool: %s", e)
+            for entry in pool:
+                try:
+                    await entry["client"].disconnect()
+                except Exception:
+                    pass
     else:
         logger.warning(
-            "Telegram MTProto credentials not configured (TELEGRAM_API_ID, TELEGRAM_API_HASH, BOT_TOKEN). "
-            "Web gateway running in fallback mode."
+            "Telegram MTProto credentials not configured (TELEGRAM_API_ID, TELEGRAM_API_HASH, "
+            "BOT_TOKEN, STORAGE_CHANNEL). Web gateway running in fallback mode."
         )
 
 
 async def on_cleanup(app: web.Application) -> None:
-    if "telethon_client" in app:
+    for entry in app.get("telethon_pool", []):
         try:
-            await app["telethon_client"].disconnect()
-            logger.info("Telethon client disconnected.")
+            await entry["client"].disconnect()
         except Exception:
             pass
     if "bot" in app:
@@ -567,13 +810,18 @@ async def on_cleanup(app: web.Application) -> None:
 
 def create_app() -> web.Application:
     app = web.Application()
+    app["started_at"] = time.time()
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)
 
     # API Routes
+    app.router.add_get("/health", handle_health)
     app.router.add_get("/api/catalog", handle_catalog)
     app.router.add_get("/api/series/{name}", handle_series_detail)
     app.router.add_get("/api/news", handle_news)
+    app.router.add_post("/api/admin/login", handle_admin_login)
+    app.router.add_post("/api/admin/logout", handle_admin_logout)
+    app.router.add_get("/api/admin/session", handle_admin_session)
     app.router.add_get("/api/admin/stats", handle_admin_stats)
     app.router.add_get("/stream/{file_id}", handle_stream)
 
@@ -584,7 +832,7 @@ def create_app() -> web.Application:
 
     # SPA Fallback
     app.router.add_get("/", serve_index)
-    app.router.add_get("/{path:.*}", serve_index)
+    app.router.add_get("/{path:.*}", handle_spa_fallback)
 
     return app
 

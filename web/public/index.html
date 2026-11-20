@@ -476,8 +476,119 @@
       border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border);
       box-shadow: 0 16px 48px rgba(0,0,0,0.85); position: relative;
     }
-    .watch-player-box video { width: 100%; height: 100%; outline: none; }
-    
+    .watch-player-box video { width: 100%; height: 100%; outline: none; display: block; }
+
+    /* ─── Custom Player Chrome ─────────────────────────────────────────── */
+    .player-shell { position: relative; width: 100%; height: 100%; background: #000; }
+    .player-overlay {
+      position: absolute; inset: 0; z-index: 4; display: flex; align-items: center;
+      justify-content: center; background: rgba(4,6,10,0.5); cursor: pointer;
+      transition: opacity .2s;
+    }
+    .player-overlay.hidden { opacity: 0; pointer-events: none; }
+    .player-big-btn {
+      width: 72px; height: 72px; border-radius: 50%; background: rgba(229,9,20,.94);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 30px rgba(0,0,0,.6); transition: transform .15s, background .15s;
+    }
+    .player-big-btn:hover { transform: scale(1.07); background: var(--crimson-hover); }
+    .player-big-btn svg { width: 30px; height: 30px; fill: #fff; margin-left: 3px; }
+    .player-spinner {
+      position: absolute; top: calc(50% - 23px); left: calc(50% - 23px); z-index: 5;
+      width: 46px; height: 46px; border-radius: 50%; border: 3px solid rgba(255,255,255,.2);
+      border-top-color: var(--crimson); animation: playerSpin .8s linear infinite; pointer-events: none;
+    }
+    @keyframes playerSpin { to { transform: rotate(360deg); } }
+    .player-msg {
+      position: absolute; z-index: 6; text-align: center; padding: 20px 24px; max-width: 82%;
+      background: rgba(7,9,14,.94); border: 1px solid var(--border);
+      border-radius: var(--radius-md); box-shadow: 0 12px 32px rgba(0,0,0,.7);
+    }
+    .player-msg h4 { font-size: 14px; margin-bottom: 6px; color: #fff; }
+    .player-msg p { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+    .player-chrome {
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
+      padding: 30px 14px 10px; opacity: 0; transform: translateY(6px);
+      background: linear-gradient(0deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.62) 45%, transparent 100%);
+      transition: opacity .2s, transform .2s;
+    }
+    .watch-player-box:hover .player-chrome,
+    .watch-player-box:focus-within .player-chrome,
+    .player-chrome.pinned { opacity: 1; transform: none; }
+    .player-seek { position: relative; height: 16px; display: flex; align-items: center; cursor: pointer; margin-bottom: 6px; }
+    .player-seek-track {
+      position: absolute; left: 0; right: 0; height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,.25); overflow: hidden;
+    }
+    .player-seek-buffered { position: absolute; inset: 0 auto 0 0; width: 0; background: rgba(255,255,255,.42); }
+    .player-seek-played { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--crimson); }
+    .player-seek-thumb {
+      position: absolute; top: 50%; left: 0; width: 12px; height: 12px; border-radius: 50%;
+      background: #fff; transform: translate(-50%,-50%); box-shadow: 0 0 0 3px rgba(229,9,20,.35); pointer-events: none;
+    }
+    .player-seek-tip {
+      position: absolute; bottom: 22px; transform: translateX(-50%); opacity: 0; pointer-events: none;
+      background: rgba(0,0,0,.92); border: 1px solid var(--border); padding: 3px 7px;
+      border-radius: 4px; font-size: 11px; font-family: 'JetBrains Mono', monospace; transition: opacity .12s;
+    }
+    .player-row { display: flex; align-items: center; gap: 4px; }
+    .player-btn {
+      width: 34px; height: 34px; border-radius: var(--radius-sm); color: #fff; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s;
+    }
+    .player-btn:hover { background: rgba(255,255,255,.14); }
+    .player-btn.active { color: var(--cyan); }
+    .player-btn svg { width: 18px; height: 18px; fill: currentColor; }
+    .player-btn.player-text { font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .player-time { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #fff; white-space: nowrap; padding: 0 4px; }
+    .player-spacer { flex: 1; }
+    .player-vol-wrap { display: flex; align-items: center; }
+    .player-vol {
+      -webkit-appearance: none; appearance: none; width: 70px; height: 4px;
+      border-radius: 2px; background: rgba(255,255,255,.3); outline: none;
+    }
+    .player-vol::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 11px; height: 11px; border-radius: 50%; background: #fff; cursor: pointer;
+    }
+    .player-vol::-moz-range-thumb { width: 11px; height: 11px; border: none; border-radius: 50%; background: #fff; cursor: pointer; }
+    .player-menu {
+      position: absolute; right: 12px; bottom: 54px; z-index: 8; min-width: 130px; padding: 8px;
+      background: rgba(10,13,20,.97); border: 1px solid var(--border); border-radius: var(--radius-md);
+    }
+    .player-menu-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); padding: 4px 8px 6px; }
+    .player-menu-item { display: flex; width: 100%; padding: 7px 10px; border-radius: 4px; font-size: 12px; color: var(--text-2); text-align: left; }
+    .player-menu-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+    .player-menu-item.active { color: var(--cyan); font-weight: 700; }
+
+    /* Up Next */
+    .up-next {
+      position: absolute; right: 16px; bottom: 68px; z-index: 7; width: 250px; padding: 12px; display: none;
+      background: rgba(10,13,20,.96); border: 1px solid var(--border-hover);
+      border-radius: var(--radius-md); box-shadow: 0 12px 30px rgba(0,0,0,.7);
+    }
+    .up-next.show { display: block; animation: pageFade .25s ease-out; }
+    .up-next-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 6px; }
+    .up-next-title { font-size: 12px; font-weight: 700; line-height: 1.4; margin-bottom: 10px; }
+    .up-next-actions { display: flex; gap: 8px; align-items: center; }
+    .up-next-play { flex: 1; padding: 7px; font-size: 11px; }
+    .up-next-cancel { padding: 7px 10px; font-size: 11px; }
+    .up-next-count { font-family: 'JetBrains Mono', monospace; color: var(--cyan); }
+
+    /* Floating mini player */
+    .mini-player {
+      position: fixed; right: 20px; bottom: 20px; width: 340px; z-index: 300; display: none;
+      background: #0A0D14; border: 1px solid var(--border-hover); border-radius: var(--radius-md);
+      box-shadow: 0 20px 60px rgba(0,0,0,.9); overflow: hidden;
+    }
+    .mini-player.show { display: block; animation: miniIn .25s ease-out; }
+    @keyframes miniIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: none; } }
+    .mini-video-holder { width: 100%; aspect-ratio: 16/9; background: #000; }
+    .mini-video-holder video { width: 100%; height: 100%; display: block; }
+    .mini-bar { display: flex; align-items: center; gap: 4px; padding: 8px 10px; }
+    .mini-title { flex: 1; min-width: 0; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 520px) { .mini-player { right: 10px; bottom: 10px; width: calc(100vw - 20px); } }
+
     .watch-controls-bar {
       margin-top: 18px; padding: 18px 24px; border-radius: var(--radius-md);
       background: var(--bg-surface); border: 1px solid var(--border);
@@ -846,11 +957,56 @@
   <!-- ─── PAGE 5: WATCH PLAYER ─────────────────────────────────────────── -->
   <main id="page-watch" class="page">
     <div class="container watch-stage">
-      <div class="watch-player-box">
-        <video id="playerVideo" controls preload="metadata" playsinline>
-          <source id="playerSource" src="" type="video/mp4">
-          Your browser does not support HTML5 video playback.
-        </video>
+      <div class="watch-player-box" id="watchPlayerBox">
+        <div class="player-shell" id="playerShell">
+          <video id="playerVideo" preload="metadata" playsinline>
+            Your browser does not support HTML5 video playback.
+          </video>
+          <div class="player-spinner" id="playerSpinner" style="display:none;"></div>
+          <div class="player-overlay" id="playerOverlay" title="Play or pause">
+            <div class="player-big-btn" id="playerBigBtn"></div>
+          </div>
+          <div class="player-msg" id="playerMsg" style="display:none;"></div>
+
+          <div class="up-next" id="upNextCard">
+            <div class="up-next-label">UP NEXT IN <span class="up-next-count" id="upNextCount">10</span>s</div>
+            <div class="up-next-title" id="upNextTitle"></div>
+            <div class="up-next-actions">
+              <button class="btn btn-primary up-next-play" id="upNextPlay">Play Now</button>
+              <button class="btn btn-secondary up-next-cancel" id="upNextCancel">Cancel</button>
+            </div>
+          </div>
+
+          <div class="player-chrome" id="playerChrome">
+            <div class="player-seek" id="playerSeek">
+              <div class="player-seek-track">
+                <div class="player-seek-buffered" id="seekBuffered"></div>
+                <div class="player-seek-played" id="seekPlayed"></div>
+              </div>
+              <div class="player-seek-thumb" id="seekThumb"></div>
+              <div class="player-seek-tip" id="seekTip">0:00</div>
+            </div>
+            <div class="player-row">
+              <button class="player-btn" id="pbPlay" aria-label="Play or pause"></button>
+              <button class="player-btn" id="pbPrev" aria-label="Previous episode"></button>
+              <button class="player-btn" id="pbNext" aria-label="Next episode"></button>
+              <button class="player-btn" id="pbMute" aria-label="Mute or unmute"></button>
+              <div class="player-vol-wrap">
+                <input class="player-vol" id="pbVolume" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume">
+              </div>
+              <span class="player-time" id="pbTime">0:00 / 0:00</span>
+              <span class="player-spacer"></span>
+              <button class="player-btn player-text" id="pbSpeed" aria-label="Playback speed">1&times;</button>
+              <button class="player-btn" id="pbPip" aria-label="Picture in picture"></button>
+              <button class="player-btn" id="pbMini" aria-label="Mini player"></button>
+              <button class="player-btn" id="pbFull" aria-label="Fullscreen"></button>
+            </div>
+          </div>
+          <div class="player-menu" id="speedMenu" style="display:none;">
+            <div class="player-menu-title">Playback Speed</div>
+            <div id="speedOptions"></div>
+          </div>
+        </div>
       </div>
 
       <div class="watch-controls-bar">
@@ -1134,6 +1290,33 @@
 
   <!-- Hidden Canvas for Logo PNG Generation -->
   <canvas id="logoCanvas" width="512" height="512" style="display:none;"></canvas>
+
+  <!-- ─── Floating Mini Player ─────────────────────────────────────────── -->
+  <div class="mini-player" id="miniPlayer">
+    <div class="mini-video-holder" id="miniVideoHolder"></div>
+    <div class="mini-bar">
+      <button class="player-btn" id="miniPlay" aria-label="Play or pause"></button>
+      <button class="player-btn" id="miniNext" aria-label="Next episode"></button>
+      <div class="mini-title" id="miniTitle">Now Playing</div>
+      <button class="player-btn" id="miniExpand" aria-label="Return to full player" title="Return to full player"></button>
+      <button class="player-btn" id="miniClose" aria-label="Stop playback" title="Stop playback"></button>
+    </div>
+  </div>
+
+  <!-- ─── Keyboard Shortcuts Help ──────────────────────────────────────── -->
+  <div class="player-msg" id="shortcutHelp" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:430px;">
+    <h4>Player Keyboard Shortcuts <span style="color:var(--text-3);font-weight:500;">(press ? to close)</span></h4>
+    <p class="mono" style="text-align:left;line-height:1.9;">
+      Space / K &nbsp; Play or pause<br>
+      J / L &nbsp;&nbsp;&nbsp;&nbsp; Back / forward 10 seconds<br>
+      &larr; / &rarr; &nbsp;&nbsp;&nbsp; Seek 5 seconds<br>
+      0 &ndash; 9 &nbsp;&nbsp;&nbsp;&nbsp; Jump to 0&ndash;90% of the episode<br>
+      F &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Toggle fullscreen<br>
+      M &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Toggle mute<br>
+      P / N &nbsp;&nbsp;&nbsp;&nbsp; Previous / next episode<br>
+      I &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Toggle mini player
+    </p>
+  </div>
 
   <!-- ─── Application Logic ────────────────────────────────────────────── -->
   <script>
@@ -1588,85 +1771,53 @@
       }
     }
 
-    // --- Watch Player Page ---
+    // --- Watch Player Page (delegates to the enhanced controller) ---
     async function startPlayback(fileId, seriesName) {
-      $('playerVideo').src = `/stream/${fileId}`;
-      if ($('playerSource')) $('playerSource').src = `/stream/${fileId}`;
-      $('playerVideo').load();
-      $('playerVideo').play().catch((e) => console.log('Playback notice:', e));
-      $('playerTgDownload').href = `https://t.me/NakamaNetworkbot?start=file_${fileId}`;
-
-      if (!currentSeriesData || currentSeriesData.series.toLowerCase() !== seriesName.toLowerCase()) {
-        try {
-          const res = await fetch(`/api/series/${encodeURIComponent(seriesName)}`);
-          currentSeriesData = await res.json();
-        } catch (e) {}
-      }
-
-      if (currentSeriesData && currentSeriesData.episodes) {
-        const epIdx = currentSeriesData.episodes.findIndex(e => e.id === fileId);
-        if (epIdx >= 0) {
-          const ep = currentSeriesData.episodes[epIdx];
-          $('playerEpTitle').textContent = `${currentSeriesData.display_title || currentSeriesData.series} - Episode ${ep.episode}`;
-          $('playerSeriesBack').innerHTML = `&larr; Return to ${esc(currentSeriesData.display_title || currentSeriesData.series)}`;
-          $('playerSeriesBack').onclick = () => navigate(`#/anime/${encodeURIComponent(currentSeriesData.series)}`);
-
-          $('playerPrevBtn').disabled = epIdx === 0;
-          $('playerNextBtn').disabled = epIdx >= currentSeriesData.episodes.length - 1;
-          $('playerPrevBtn').onclick = () => {
-            if (epIdx > 0) navigate(`#/watch/${currentSeriesData.episodes[epIdx-1].id}/${encodeURIComponent(currentSeriesData.series)}`);
-          };
-          $('playerNextBtn').onclick = () => {
-            if (epIdx < currentSeriesData.episodes.length - 1) navigate(`#/watch/${currentSeriesData.episodes[epIdx+1].id}/${encodeURIComponent(currentSeriesData.series)}`);
-          };
-
-          $('watchQuickPills').innerHTML = currentSeriesData.episodes.map(e => `
-            <button 
-              onclick="navigate('#/watch/${e.id}/${encodeURIComponent(currentSeriesData.series)}')" 
-              class="ep-pill mono ${e.id === fileId ? 'active' : ''}"
-            >
-              ${e.episode}
-            </button>
-          `).join('');
-        }
-      }
+      return NakamaPlayer.load(fileId, seriesName);
     }
 
-    // --- Admin Dashboard & Brand Control ---
-    const ADMIN_PIN = "191405";
-
-    function isUserAdmin() {
-      return localStorage.getItem('nakama_admin_auth') === '1';
+    // --- Admin Dashboard & Brand Control (server-side signed session) ---
+    function showAdminGate(message) {
+      $('adminGateView').style.display = 'block';
+      $('adminAuthView').style.display = 'none';
+      $('adminGateError').style.display = message ? 'block' : 'none';
+      if (message) $('adminGateError').textContent = message;
+      $('adminPinInput').value = '';
+      setTimeout(() => $('adminPinInput').focus(), 100);
     }
 
-    function initAdminView() {
-      if (isUserAdmin()) {
+    async function initAdminView() {
+      let authenticated = false;
+      try {
+        const res = await fetch('/api/admin/session');
+        authenticated = (await res.json()).authenticated === true;
+      } catch (e) {}
+      if (authenticated) {
         $('adminGateView').style.display = 'none';
         $('adminAuthView').style.display = 'block';
         loadAdminStats();
       } else {
-        $('adminGateView').style.display = 'block';
-        $('adminAuthView').style.display = 'none';
-        $('adminGateError').style.display = 'none';
-        $('adminPinInput').value = '';
-        setTimeout(() => $('adminPinInput').focus(), 100);
+        showAdminGate('');
       }
     }
 
-    function handleAdminLogin(e) {
+    async function handleAdminLogin(e) {
       e.preventDefault();
       const pin = $('adminPinInput').value.trim();
-      if (pin === ADMIN_PIN) {
-        localStorage.setItem('nakama_admin_auth', '1');
-        initAdminView();
-      } else {
-        $('adminGateError').style.display = 'block';
-        $('adminPinInput').select();
-      }
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin })
+        });
+        if (res.ok) { await initAdminView(); return; }
+      } catch (err) {}
+      showAdminGate('Invalid security code. Please check your credentials.');
+      $('adminPinInput').select();
     }
 
-    function handleAdminLogout() {
-      localStorage.removeItem('nakama_admin_auth');
+    async function handleAdminLogout() {
+      try { await fetch('/api/admin/logout', { method: 'POST' }); } catch (e) {}
       initAdminView();
     }
 
@@ -1755,6 +1906,18 @@
         $('searchInput').value = '';
         renderHome();
       }
+      if (e.key === 'Escape' && $('shortcutHelp').style.display !== 'none') {
+        $('shortcutHelp').style.display = 'none';
+      }
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        const help = $('shortcutHelp');
+        help.style.display = help.style.display === 'none' ? 'block' : 'none';
+        return;
+      }
+      const onWatch = $('page-watch').classList.contains('active') || NakamaPlayer.miniActive;
+      if (onWatch && !e.target.matches('input, textarea, select')) {
+        NakamaPlayer.handleKey(e);
+      }
     });
 
     function esc(s) {
@@ -1763,6 +1926,436 @@
       d.textContent = s;
       return d.innerHTML;
     }
+
+    // ─── Enhanced Player Controller ─────────────────────────────────────────
+    // Handles: auto-pause on navigation/tab-hide, resume, mini player, custom
+    // controls, autoplay "Up Next", keyboard shortcuts and progress persistence.
+    const NakamaPlayer = (function () {
+      const PROGRESS_KEY = 'nakama_watch_progress_v1';
+      const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+      const ICONS = {
+        play:   '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+        pause:  '<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>',
+        prev:   '<svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM20 6v12l-9-6z"/></svg>',
+        next:   '<svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM4 6v12l9-6z"/></svg>',
+        vol:    '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 00-2.5-4v8a4.5 4.5 0 002.5-4z"/></svg>',
+        mute:   '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zm12.6 3l2.2-2.2-1.4-1.4-2.2 2.2-2.2-2.2-1.4 1.4 2.2 2.2-2.2 2.2 1.4 1.4 2.2-2.2 2.2 2.2 1.4-1.4z"/></svg>',
+        pip:    '<svg viewBox="0 0 24 24"><path d="M4 5h16v14H4V5zm2 2v10h12V7H6zm6 2h6v6h-6V9z"/></svg>',
+        mini:   '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4V4zm2 2v4h8V6H6zm0 6v6h12v-6H6z"/></svg>',
+        full:   '<svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/></svg>',
+        expand: '<svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/></svg>',
+        close:  '<svg viewBox="0 0 24 24"><path d="M6 6l1.4-1.4L12 9.2l4.6-4.6L18 6l-4.6 4.6L18 15.2 16.6 16.6 12 12 7.4 16.6 6 15.2l4.6-4.6z"/></svg>'
+      };
+
+      const P = {
+        v: null, miniActive: false, currentId: null, currentSeries: null,
+        currentTitle: '', resumeAt: 0, epIdx: -1, nextId: null,
+        upNextShown: false, upNextCancelled: false, lastSave: 0, scrubbing: false
+      };
+
+      function fmt(s) {
+        if (!isFinite(s) || s < 0) s = 0;
+        s = Math.floor(s);
+        const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+        return h ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
+                 : `${m}:${String(sec).padStart(2,'0')}`;
+      }
+      function setIcon(el, name, text) {
+        if (el) el.innerHTML = text !== undefined ? text : (ICONS[name] || '');
+      }
+      function spinner(show) { $('playerSpinner').style.display = show ? 'block' : 'none'; }
+      function message(title, body) {
+        $('playerMsg').innerHTML = `<h4>${title}</h4><p>${body}</p>`;
+        $('playerMsg').style.display = 'block';
+      }
+      function clearMessage() { $('playerMsg').style.display = 'none'; }
+
+      function readProgress() {
+        try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch (e) { return {}; }
+      }
+      function saveProgress(force) {
+        const v = P.v;
+        if (!P.currentId || !v || !isFinite(v.duration) || v.duration <= 0) return;
+        const now = Date.now();
+        if (!force && now - P.lastSave < 4000) return;
+        P.lastSave = now;
+        const all = readProgress();
+        all[P.currentId] = { t: Math.floor(v.currentTime), d: Math.floor(v.duration), title: P.currentTitle, at: now };
+        try {
+          const keys = Object.keys(all);
+          if (keys.length > 200) {
+            keys.sort((a, b) => (all[b].at || 0) - (all[a].at || 0));
+            keys.slice(100).forEach(k => delete all[k]);
+          }
+          localStorage.setItem(PROGRESS_KEY, JSON.stringify(all));
+        } catch (e) {}
+      }
+      function clearProgress(id) {
+        if (!id) return;
+        try {
+          const all = readProgress();
+          delete all[id];
+          localStorage.setItem(PROGRESS_KEY, JSON.stringify(all));
+        } catch (e) {}
+      }
+      function applyResume() {
+        const v = P.v;
+        if (!v || !isFinite(v.duration) || v.duration <= 0) return;
+        if (P.resumeAt > 5 && P.resumeAt < v.duration - 5) {
+          try { v.currentTime = P.resumeAt; } catch (e) {}
+        }
+      }
+
+      function syncPlayIcons() {
+        const playing = P.v && !P.v.paused && !P.v.ended;
+        const icon = playing ? 'pause' : 'play';
+        setIcon($('pbPlay'), icon);
+        setIcon($('miniPlay'), icon);
+        setIcon($('playerBigBtn'), icon);
+        $('playerOverlay').classList.toggle('hidden', !!playing);
+      }
+      function syncMute() {
+        const v = P.v; if (!v) return;
+        const muted = v.muted || v.volume === 0;
+        setIcon($('pbMute'), muted ? 'mute' : 'vol');
+        $('pbMute').classList.toggle('active', muted);
+        $('pbVolume').value = muted ? 0 : v.volume;
+      }
+      function updateChrome() {
+        const v = P.v; if (!v) return;
+        const dur = v.duration && isFinite(v.duration) ? v.duration : 0;
+        const played = dur ? (v.currentTime / dur) * 100 : 0;
+        $('seekPlayed').style.width = played + '%';
+        $('seekThumb').style.left = played + '%';
+        if (dur && v.buffered && v.buffered.length) {
+          try {
+            const bufferedEnd = v.buffered.end(v.buffered.length - 1);
+            $('seekBuffered').style.width = Math.min(100, (bufferedEnd / dur) * 100) + '%';
+          } catch (e) {}
+        }
+        $('pbTime').textContent = `${fmt(v.currentTime)} / ${fmt(dur)}`;
+
+        if (P.nextId && !P.upNextShown && !P.upNextCancelled && dur && v.currentTime > 0) {
+          const remain = Math.ceil(dur - v.currentTime);
+          if (remain <= 10 && remain > 0) {
+            P.upNextShown = true;
+            $('upNextTitle').textContent = `Episode ${P.nextEpisode} — ${P.currentTitle.split(' - ')[0]}`;
+            $('upNextCount').textContent = remain;
+            $('upNextCard').classList.add('show');
+          }
+        }
+        if (P.upNextShown && $('upNextCard').classList.contains('show')) {
+          const remain = Math.max(0, Math.ceil(dur - v.currentTime));
+          $('upNextCount').textContent = remain;
+          if (remain <= 0) goNext();
+        }
+      }
+
+      async function playWithFallback() {
+        clearMessage();
+        try {
+          await P.v.play();
+          syncPlayIcons();
+        } catch (e) {
+          syncPlayIcons();
+          if (!P.v.error) message('Press play to start', 'Your browser blocked automatic playback. Tap the play button above to begin.');
+        }
+      }
+      function togglePlay() {
+        const v = P.v; if (!v) return;
+        if (v.paused || v.ended) { clearMessage(); v.play().catch(() => {}); }
+        else v.pause();
+        syncPlayIcons();
+      }
+      function toggleFullscreen() {
+        try {
+          if (!document.fullscreenElement) $('watchPlayerBox').requestFullscreen?.();
+          else document.exitFullscreen?.();
+        } catch (e) {}
+      }
+      function renderSpeedMenu() {
+        const box = $('speedOptions');
+        const rate = P.v ? (P.v.playbackRate || 1) : 1;
+        box.innerHTML = SPEEDS.map(s =>
+          `<button class="player-menu-item ${Math.abs(rate - s) < 0.01 ? 'active' : ''}" data-speed="${s}">${s === 1 ? 'Normal' : s + '×'}</button>`
+        ).join('');
+        box.querySelectorAll('[data-speed]').forEach(btn => {
+          btn.onclick = () => {
+            P.v.playbackRate = parseFloat(btn.dataset.speed);
+            $('pbSpeed').textContent = P.v.playbackRate + '×';
+            renderSpeedMenu();
+            $('speedMenu').style.display = 'none';
+          };
+        });
+      }
+      function cancelUpNext() {
+        P.upNextShown = false;
+        P.upNextCancelled = true;
+        $('upNextCard').classList.remove('show');
+      }
+      function goNext() {
+        if (!P.nextId || !P.currentSeries) return;
+        cancelUpNext();
+        navigate(`#/watch/${P.nextId}/${encodeURIComponent(P.currentSeries)}`);
+      }
+      function seekToClientX(clientX) {
+        const rect = $('playerSeek').getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        if (P.v && isFinite(P.v.duration)) P.v.currentTime = ratio * P.v.duration;
+      }
+
+      function pauseNow() {
+        const v = P.v;
+        if (!v || !P.currentId) return;
+        if (!v.paused) {
+          saveProgress(true);
+          v.pause();
+          syncPlayIcons();
+        }
+      }
+      function stop(opts) {
+        opts = opts || {};
+        const v = P.v; if (!v) return;
+        saveProgress(true);
+        v.pause();
+        cancelUpNext();
+        if (opts.clear) {
+          v.removeAttribute('src');
+          v.load();
+          P.currentId = null;
+          P.resumeAt = 0;
+        }
+        if (P.miniActive) closeMini();
+        syncPlayIcons();
+      }
+      function enterMini() {
+        if (P.miniActive || !P.currentId) return;
+        $('miniVideoHolder').appendChild(P.v);
+        $('miniTitle').textContent = P.currentTitle || 'Now Playing';
+        $('miniPlayer').classList.add('show');
+        setIcon($('miniExpand'), 'expand');
+        setIcon($('miniClose'), 'close');
+        setIcon($('miniNext'), 'next');
+        P.miniActive = true;
+        syncPlayIcons();
+      }
+      function exitMini(returnToWatch) {
+        if (!P.miniActive) return;
+        $('playerShell').insertBefore(P.v, $('playerShell').firstChild);
+        $('miniPlayer').classList.remove('show');
+        P.miniActive = false;
+        syncPlayIcons();
+        if (returnToWatch && P.currentId && P.currentSeries) {
+          navigate(`#/watch/${P.currentId}/${encodeURIComponent(P.currentSeries)}`);
+        }
+      }
+      function closeMini() {
+        if (!P.miniActive) return;
+        exitMini(false);
+        stop({ clear: true });
+      }
+
+      async function load(fileId, seriesName) {
+        // Returning to the same episode (e.g. expanding the mini player) — restore and resume
+        if (P.currentId === fileId && P.v && P.v.src) {
+          if (P.miniActive) exitMini(false);
+          applyResume();
+          playWithFallback();
+          return;
+        }
+
+        saveProgress(true);
+        cancelUpNext();
+        P.upNextCancelled = false;
+        P.upNextShown = false;
+        P.resumeAt = 0;
+        P.currentId = fileId;
+        P.currentSeries = seriesName;
+        P.epIdx = -1;
+        P.nextId = null;
+        P.currentTitle = `Episode ${fileId}`;
+
+        if (!currentSeriesData || currentSeriesData.series.toLowerCase() !== String(seriesName).toLowerCase()) {
+          try {
+            const res = await fetch(`/api/series/${encodeURIComponent(seriesName)}`);
+            currentSeriesData = await res.json();
+          } catch (e) {}
+        }
+        const series = currentSeriesData;
+        if (series && series.episodes) {
+          const idx = series.episodes.findIndex(e => e.id === fileId);
+          P.epIdx = idx;
+          if (idx >= 0) {
+            const ep = series.episodes[idx];
+            P.currentTitle = `${series.display_title || series.series} - Episode ${ep.episode}`;
+            P.nextId = idx < series.episodes.length - 1 ? series.episodes[idx + 1].id : null;
+            P.nextEpisode = P.nextId ? series.episodes[idx + 1].episode : null;
+            $('playerEpTitle').textContent = P.currentTitle;
+            $('playerSeriesBack').innerHTML = `&larr; Return to ${esc(series.display_title || series.series)}`;
+            $('playerSeriesBack').onclick = () => navigate(`#/anime/${encodeURIComponent(series.series)}`);
+            $('playerPrevBtn').disabled = idx === 0;
+            $('playerNextBtn').disabled = idx >= series.episodes.length - 1;
+            $('playerPrevBtn').onclick = () => { if (idx > 0) navigate(`#/watch/${series.episodes[idx - 1].id}/${encodeURIComponent(series.series)}`); };
+            $('playerNextBtn').onclick = () => { if (idx < series.episodes.length - 1) navigate(`#/watch/${series.episodes[idx + 1].id}/${encodeURIComponent(series.series)}`); };
+            $('watchQuickPills').innerHTML = series.episodes.map(e => `
+              <button onclick="navigate('#/watch/${e.id}/${encodeURIComponent(series.series)}')" class="ep-pill mono ${e.id === fileId ? 'active' : ''}">${e.episode}</button>
+            `).join('');
+          }
+        }
+        $('miniTitle').textContent = P.currentTitle;
+        $('playerTgDownload').href = `https://t.me/NakamaNetworkbot?start=file_${fileId}`;
+
+        const saved = readProgress()[fileId];
+        if (saved && saved.t > 5 && saved.d && saved.t < saved.d - 5) P.resumeAt = saved.t;
+
+        if (P.miniActive) exitMini(false);
+        P.v.src = `/stream/${fileId}`;
+        P.v.load();
+        spinner(true);
+        playWithFallback();
+      }
+
+      function handleKey(e) {
+        const v = P.v; if (!v) return;
+        let used = true;
+        switch (e.key.toLowerCase()) {
+          case ' ': case 'k': togglePlay(); break;
+          case 'j': v.currentTime = Math.max(0, v.currentTime - 10); break;
+          case 'l': v.currentTime = Math.min(v.duration || 0, v.currentTime + 10); break;
+          case 'arrowleft': v.currentTime = Math.max(0, v.currentTime - 5); break;
+          case 'arrowright': v.currentTime = Math.min(v.duration || 0, v.currentTime + 5); break;
+          case 'f': toggleFullscreen(); break;
+          case 'm': v.muted = !v.muted; syncMute(); break;
+          case 'n': goNext(); break;
+          case 'p': if (P.epIdx > 0 && currentSeriesData) navigate(`#/watch/${currentSeriesData.episodes[P.epIdx - 1].id}/${encodeURIComponent(P.currentSeries)}`); break;
+          case 'i': P.miniActive ? exitMini(false) : enterMini(); break;
+          default:
+            if (/^[0-9]$/.test(e.key) && isFinite(v.duration)) v.currentTime = (parseInt(e.key, 10) / 10) * v.duration;
+            else used = false;
+        }
+        if (used) e.preventDefault();
+      }
+
+      function init() {
+        P.v = $('playerVideo');
+        const v = P.v; if (!v) return;
+
+        setIcon($('pbPlay'), 'play');
+        setIcon($('miniPlay'), 'play');
+        setIcon($('playerBigBtn'), 'play');
+        setIcon($('pbPrev'), 'prev');
+        setIcon($('pbNext'), 'next');
+        setIcon($('pbMute'), 'vol');
+        setIcon($('pbPip'), 'pip');
+        setIcon($('pbMini'), 'mini');
+        setIcon($('pbFull'), 'full');
+        renderSpeedMenu();
+
+        $('pbPlay').onclick = togglePlay;
+        $('playerBigBtn').onclick = togglePlay;
+        $('playerOverlay').onclick = togglePlay;
+        $('miniPlay').onclick = togglePlay;
+        $('pbPrev').onclick = () => $('playerPrevBtn').click();
+        $('pbNext').onclick = goNext;
+        $('miniNext').onclick = goNext;
+        $('pbMute').onclick = () => { v.muted = !v.muted; syncMute(); };
+        $('pbVolume').oninput = (e) => { v.volume = parseFloat(e.target.value); v.muted = v.volume === 0; syncMute(); };
+        $('pbPip').onclick = async () => {
+          try {
+            if (document.pictureInPictureElement) await document.exitPictureInPicture();
+            else if (v.requestPictureInPicture) await v.requestPictureInPicture();
+          } catch (e) {}
+        };
+        $('pbMini').onclick = () => P.miniActive ? exitMini(false) : enterMini();
+        $('pbFull').onclick = toggleFullscreen;
+        $('miniExpand').onclick = () => exitMini(true);
+        $('miniClose').onclick = closeMini;
+        $('pbSpeed').onclick = () => {
+          const m = $('speedMenu');
+          m.style.display = m.style.display === 'none' ? 'block' : 'none';
+        };
+        $('upNextPlay').onclick = goNext;
+        $('upNextCancel').onclick = cancelUpNext;
+
+        const seek = $('playerSeek');
+        seek.addEventListener('pointerdown', (e) => {
+          P.scrubbing = true;
+          seek.setPointerCapture?.(e.pointerId);
+          seekToClientX(e.clientX);
+        });
+        seek.addEventListener('pointermove', (e) => {
+          const rect = seek.getBoundingClientRect();
+          const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+          const tip = $('seekTip');
+          tip.style.left = (ratio * 100) + '%';
+          tip.style.opacity = '1';
+          tip.textContent = fmt(ratio * (v.duration || 0));
+          if (P.scrubbing) seekToClientX(e.clientX);
+        });
+        seek.addEventListener('pointerup', (e) => {
+          P.scrubbing = false;
+          seek.releasePointerCapture?.(e.pointerId);
+        });
+        seek.addEventListener('pointerleave', () => { $('seekTip').style.opacity = '0'; });
+
+        v.addEventListener('play', () => { spinner(false); clearMessage(); syncPlayIcons(); });
+        v.addEventListener('playing', () => { spinner(false); syncPlayIcons(); });
+        v.addEventListener('pause', () => { syncPlayIcons(); saveProgress(true); });
+        v.addEventListener('waiting', () => spinner(true));
+        v.addEventListener('canplay', () => spinner(false));
+        v.addEventListener('loadedmetadata', applyResume);
+        v.addEventListener('timeupdate', updateChrome);
+        v.addEventListener('progress', updateChrome);
+        v.addEventListener('volumechange', syncMute);
+        v.addEventListener('ended', () => {
+          syncPlayIcons();
+          clearProgress(P.currentId);
+          if (P.nextId) goNext();
+        });
+        v.addEventListener('error', () => {
+          spinner(false);
+          if (v.getAttribute('src')) {
+            message('Stream unavailable', 'This episode could not be loaded from the vault. Try again or use the Telegram download link below.');
+          }
+        });
+
+        // Pause the instant the user leaves: SPA route change, tab switch,
+        // window blur, external link, navigation/reload or page freeze.
+        // The mini player is exempt only from in-app route changes (so it can
+        // float while browsing the catalog), never from truly leaving the page.
+        window.addEventListener('hashchange', () => {
+          const hash = location.hash || '#/';
+          if (hash !== '#/') { if (heroCycleInterval) clearInterval(heroCycleInterval); }
+          if (!hash.startsWith('#/watch/') && !P.miniActive) pauseNow();
+        });
+        document.addEventListener('visibilitychange', () => { if (document.hidden) pauseNow(); });
+        window.addEventListener('pagehide', pauseNow);
+        window.addEventListener('beforeunload', pauseNow);
+        window.addEventListener('blur', pauseNow);
+        document.addEventListener('freeze', pauseNow);
+        document.addEventListener('click', (e) => {
+          const a = e.target.closest && e.target.closest('a');
+          if (!a) return;
+          const href = a.getAttribute('href') || '';
+          if (href && !href.startsWith('#') && (a.target === '_blank' || /^https?:\/\//i.test(href))) pauseNow();
+        }, true);
+
+        syncPlayIcons();
+        syncMute();
+      }
+
+      init();
+
+      return {
+        load: load,
+        stop: stop,
+        handleKey: handleKey,
+        enterMini: enterMini,
+        exitMini: exitMini,
+        closeMini: closeMini,
+        get miniActive() { return P.miniActive; }
+      };
+    })();
   </script>
 </body>
 </html>

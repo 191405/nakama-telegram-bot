@@ -24,5 +24,17 @@ services:
     volumes:
       - nakama_data:/data
 
+  # ─── SubsPlease RSS Ingest Worker (optional) ─────────────────────────────────
+  worker:
+    build: .
+    restart: unless-stopped
+    command: ["python", "-m", "worker.rss_sub_bot"]
+    env_file:
+      - .env
+    volumes:
+      - nakama_data:/data
+    profiles:
+      - ingest
+
 volumes:
   nakama_data:

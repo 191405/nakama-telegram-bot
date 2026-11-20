@@ -59,11 +59,11 @@ cp .env.example .env
 
 Populate `.env` with your values:
 ```env
-BOT_TOKEN=8979709590:AA...
+BOT_TOKEN=123456789:AA_YOUR_BOT_TOKEN_HERE
 ADMIN_IDS=123456789
-STORAGE_CHANNEL=-1001985886914
-TELEGRAM_API_ID=30072804
-TELEGRAM_API_HASH=b504faaf7cb9e69748eb705834e1130f
+STORAGE_CHANNEL=-100YOUR_STORAGE_CHANNEL_ID
+TELEGRAM_API_ID=12345678
+TELEGRAM_API_HASH=your_32_character_api_hash_here
 DATABASE_URL=sqlite+aiosqlite:///filebot.db
 HOST=0.0.0.0
 PORT=8080
@@ -104,6 +104,15 @@ docker compose up -d
 
 - Web Gateway is mapped to `http://YOUR_SERVER_IP:8080`.
 - SQLite database and Telethon session files are persisted in the `nakama_data` volume.
+- The optional SubsPlease RSS ingest worker runs only when you opt in (it needs its
+  own `SUB_BOT_TOKEN` as administrator of the storage channel):
+
+  ```bash
+  docker compose --profile ingest up -d
+  ```
+
+On Fly.io the unified runner starts that worker automatically whenever
+`SUB_BOT_TOKEN` and `STORAGE_CHANNEL` are set.
 
 ### Option B: Fly.io Cloud Deployment (24/7 Serverless Container)
 
@@ -118,9 +127,10 @@ docker compose up -d
    flyctl secrets set \
      BOT_TOKEN="your_token" \
      ADMIN_IDS="your_admin_id" \
-     STORAGE_CHANNEL="-1001985886914" \
+     STORAGE_CHANNEL="-100YOUR_STORAGE_CHANNEL_ID" \
      TELEGRAM_API_ID="your_api_id" \
-     TELEGRAM_API_HASH="your_api_hash"
+     TELEGRAM_API_HASH="your_api_hash" \
+      ADMIN_PANEL_SECRET="a_long_random_secret_for_the_admin_dashboard"
    ```
 5. Deploy:
    ```bash

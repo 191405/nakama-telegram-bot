@@ -48,7 +48,22 @@ class Settings(BaseSettings):
     telegram_api_id: int | None = None
     telegram_api_hash: str | None = None
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    # Number of independent MTProto sessions used for concurrent streaming.
+    # Each gets its own Telethon session file (…_0, …_1, …).
+    stream_pool_size: int = 3
+
+    # Web admin dashboard secret. When empty, the admin API is disabled.
+    admin_panel_secret: str = ""
+
+    # Tolerate the extra variables shipped in .env.example / fly.toml [env]
+    # (HOST, PORT, SUB_BOT_TOKEN, TELEGRAM_SESSION_PATH, ...). Without this,
+    # pydantic-settings 2.x rejects them with extra_forbidden and the whole
+    # web service + bot fail to start with an otherwise valid config.
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+    }
 
     @property
     def admin_id_list(self) -> list[int]:
