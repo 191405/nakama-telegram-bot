@@ -152,6 +152,34 @@ python scripts/sync_vault.py
 ```
 This script iterates through all records in `filebot.db` that lack a `channel_message_id`, forwards them to the storage channel, and stores their persistent message references.
 
+### Automatic episode ingestion from RSS (debrid)
+
+The sub-bot worker (`worker/rss_sub_bot.py`) polls the SubsPlease 1080p feed every
+5 minutes. With a debrid API key configured it resolves each magnet to a direct
+download, uploads the real video file to the storage channel, and the main bot's
+channel indexer makes it streamable on the website automatically (the SPA
+refreshes its catalog every 30 seconds).
+
+Required secrets for full ingestion:
+
+```bash
+flyctl secrets set \
+  SUB_BOT_TOKEN="your_uploader_bot_token" \
+  DEBRID_API_KEY="your_debrid_api_key" \
+  DEBRID_PROVIDER="realdebrid" \
+  -a nakama-network
+```
+
+`SUB_BOT_TOKEN`, `STORAGE_CHANNEL`, `TELEGRAM_API_ID`, and `TELEGRAM_API_HASH`
+are also required (the latter three are already configured). Without
+`DEBRID_API_KEY` the worker only posts magnet-link notifications, which are
+**not** playable. To enable it under Docker Compose, use
+`docker compose --profile ingest up -d`.
+
+Note: episode files are temporarily written to `/data/ingest_tmp` before upload,
+so increase the Fly volume if you ingest many large releases. On failure the
+worker falls back to posting the magnet notice.
+
 ---
 
 ## 🔒 Security Best Practices
