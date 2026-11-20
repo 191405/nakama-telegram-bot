@@ -24,7 +24,7 @@ from typing import Any
 from aiohttp import web
 from aiogram import Bot
 from telethon import TelegramClient
-from sqlalchemy import select, text
+from sqlalchemy import func, select, text
 
 from bot.config import settings
 from bot.db.engine import async_session, init_db
@@ -227,10 +227,33 @@ async def handle_health(request: web.Request) -> web.Response:
     return web.json_response(payload, status=200 if db_ok else 503)
 
 
+async def get_catalog_version(session) -> str:
+    """Cheap fingerprint of catalog state, used by the UI for poll-based refresh."""
+    row = (
+        await session.execute(
+            select(
+                func.count(File.id),
+                func.coalesce(func.max(File.id), 0),
+                func.coalesce(func.sum(File.download_count), 0),
+            )
+        )
+    ).one()
+    cat_count = (await session.execute(select(func.count(Category.id)))).scalar_one()
+    return f"{row[0]}-{row[1]}-{row[2]}-{cat_count}"
+
+
+async def handle_catalog_version(request: web.Request) -> web.Response:
+    """GET /api/catalog/version - tiny payload for change detection."""
+    async with async_session() as session:
+        version = await get_catalog_version(session)
+    return web.json_response({"status": "ok", "version": version})
+
+
 async def handle_catalog(request: web.Request) -> web.Response:
     """GET /api/catalog - Grouped anime catalog with cover art and latest episodes."""
     async with async_session() as session:
         files = list((await session.execute(select(File).order_by(File.created_at.desc()))).scalars().all())
+        version = await get_catalog_version(session)
 
     # Group files by clean anime title
     series_dict: dict[str, list[File]] = {}
@@ -290,6 +313,7 @@ async def handle_catalog(request: web.Request) -> web.Response:
 
     return web.json_response({
         "status": "ok",
+        "version": version,
         "total_series": len(catalog_cards),
         "catalog": catalog_cards,
         "latest_releases": latest_feed,
@@ -817,6 +841,7 @@ def create_app() -> web.Application:
     # API Routes
     app.router.add_get("/health", handle_health)
     app.router.add_get("/api/catalog", handle_catalog)
+    app.router.add_get("/api/catalog/version", handle_catalog_version)
     app.router.add_get("/api/series/{name}", handle_series_detail)
     app.router.add_get("/api/news", handle_news)
     app.router.add_post("/api/admin/login", handle_admin_login)

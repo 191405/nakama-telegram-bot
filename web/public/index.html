@@ -1329,6 +1329,10 @@
     let activeStatus = 'ALL';
     let heroCycleInterval = null;
     let heroIndex = 0;
+    let catalogVersion = null;
+    let catalogPollTimer = null;
+    let catalogRefreshing = false;
+    const CATALOG_POLL_MS = 30000;
 
     const $ = (id) => document.getElementById(id);
 
@@ -1394,7 +1398,7 @@
     }
 
     window.addEventListener('hashchange', handleRoute);
-    window.addEventListener('load', handleRoute);
+    window.addEventListener('load', () => { handleRoute(); startCatalogPoller(); });
 
     // --- AniList Metadata Enrichment Cache ---
     const anilistCache = {};
@@ -1438,18 +1442,63 @@
     }
 
     // --- Catalog Ingestion ---
-    async function loadCatalog() {
+    async function loadCatalog(render = true) {
+      catalogRefreshing = true;
       try {
-        const res = await fetch('/api/catalog');
+        const res = await fetch('/api/catalog', { cache: 'no-store' });
         const data = await res.json();
         if (data.status === 'ok') {
           catalog = data.catalog || data.series || [];
           latestReleases = data.latest_releases || [];
-          renderHome();
+          if (data.version) catalogVersion = data.version;
+          if (render) refreshVisibleView();
         }
       } catch (err) {
         console.error('Error fetching catalog:', err);
+      } finally {
+        catalogRefreshing = false;
       }
+    }
+
+    // Re-render whichever catalog-backed view is on screen without changing
+    // the route or disturbing video playback.
+    function refreshVisibleView() {
+      const hash = location.hash || '#/';
+      // Never re-render the player: it would interrupt the active video.
+      if (hash.startsWith('#/watch/')) return;
+      // Leave an active search untouched so results do not get wiped.
+      if ($('searchInput') && $('searchInput').value.trim()) return;
+      if (hash.startsWith('#/anime/') && currentSeriesData) {
+        loadSeriesDetail(decodeURIComponent(hash.replace('#/anime/', '')));
+      } else if (hash === '#/browse' || hash === '#/browse/') {
+        renderBrowse();
+      } else {
+        renderHome();
+      }
+    }
+
+    async function pollCatalogVersion() {
+      if (catalogRefreshing || document.hidden) return;
+      try {
+        const res = await fetch('/api/catalog/version', { cache: 'no-store' });
+        const data = await res.json();
+        if (data.status !== 'ok' || !data.version) return;
+        if (catalogVersion === null) { catalogVersion = data.version; return; }
+        if (data.version !== catalogVersion) {
+          catalogVersion = data.version;
+          await loadCatalog(true);
+        }
+      } catch (e) {
+        // Network hiccup — the next poll will retry.
+      }
+    }
+
+    function startCatalogPoller() {
+      if (catalogPollTimer) clearInterval(catalogPollTimer);
+      catalogPollTimer = setInterval(pollCatalogVersion, CATALOG_POLL_MS);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) pollCatalogVersion();
+      });
     }
 
     // --- Render Home Page ---
