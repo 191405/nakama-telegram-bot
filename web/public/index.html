@@ -735,12 +735,23 @@
     <div class="nav-inner">
       <a href="#/" class="nav-brand">
         <svg viewBox="0 0 512 512" fill="none">
-          <rect width="512" height="512" rx="120" fill="#141A24" stroke="rgba(255, 255, 255, 0.12)" stroke-width="8"/>
-          <path d="M128 384V128h64v256z" fill="#E50914"/>
-          <path d="M192 128l128 256h64L256 128z" fill="#E50914"/>
-          <path d="M320 384V128h64v256z" fill="#E50914"/>
-          <circle cx="384" cy="128" r="28" fill="#00D8F6"/>
-          <circle cx="384" cy="128" r="14" fill="#FFFFFF"/>
+          <rect width="512" height="512" rx="120" fill="#0E121A"/>
+          <rect x="2" y="2" width="508" height="508" rx="118" stroke="rgba(255,255,255,0.12)" stroke-width="4"/>
+          <circle cx="256" cy="256" r="160" fill="#1A2234" opacity="0.45"/>
+          <g opacity="0.35" stroke="#E50914" stroke-width="16" stroke-linecap="round">
+            <path d="M96 400 L176 320"/><path d="M336 176 L416 96"/>
+          </g>
+          <g fill="#E50914">
+            <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z"/>
+            <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(90 256 256)"/>
+            <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(180 256 256)"/>
+            <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(270 256 256)"/>
+          </g>
+          <circle cx="256" cy="256" r="46" fill="#00D8F6" opacity="0.18"/>
+          <circle cx="256" cy="256" r="32" fill="#00D8F6"/>
+          <circle cx="256" cy="256" r="13" fill="#FFFFFF"/>
+          <circle cx="392" cy="120" r="26" fill="#00D8F6"/>
+          <circle cx="392" cy="120" r="12" fill="#FFFFFF"/>
         </svg>
         <div>
           <div class="nav-brand-title">Nakama</div>
@@ -1041,11 +1052,16 @@
       <!-- PIN Gate View (Unauthenticated) -->
       <div id="adminGateView" class="admin-gate-wrap">
         <svg style="width:48px; height:48px; margin:0 auto 16px auto;" viewBox="0 0 512 512" fill="none">
-          <rect width="512" height="512" rx="120" fill="#141A24" stroke="rgba(255, 255, 255, 0.12)" stroke-width="8"/>
-          <path d="M128 384V128h64v256z" fill="#E50914"/>
-          <path d="M192 128l128 256h64L256 128z" fill="#E50914"/>
-          <path d="M320 384V128h64v256z" fill="#E50914"/>
-          <circle cx="384" cy="128" r="28" fill="#00D8F6"/>
+          <rect width="512" height="512" rx="120" fill="#0E121A"/>
+          <circle cx="256" cy="256" r="160" fill="#1A2234" opacity="0.45"/>
+          <g fill="#E50914">
+            <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z"/>
+            <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(90 256 256)"/>
+            <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(180 256 256)"/>
+            <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(270 256 256)"/>
+          </g>
+          <circle cx="256" cy="256" r="32" fill="#00D8F6"/>
+          <circle cx="256" cy="256" r="13" fill="#FFFFFF"/>
         </svg>
         <h2 class="admin-gate-title">Admin Authorization</h2>
         <p class="admin-gate-desc">Enter the administrator secret to access platform metrics, brand assets, and system control.</p>
@@ -1138,27 +1154,23 @@
             <!-- Logo Preview & Downloads -->
             <div class="admin-logo-preview-box">
               <svg id="officialSvgPreview" viewBox="0 0 512 512" fill="none">
-                <defs>
-                  <radialGradient id="bgGradPreview" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
-                    <stop offset="0%" stop-color="#1A2234"/>
-                    <stop offset="100%" stop-color="#090B10"/>
-                  </radialGradient>
-                  <linearGradient id="crimsonGradPreview" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#FF2A4B"/>
-                    <stop offset="100%" stop-color="#D3081E"/>
-                  </linearGradient>
-                  <linearGradient id="cyanGradPreview" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#00F0FF"/>
-                    <stop offset="100%" stop-color="#0080FF"/>
-                  </linearGradient>
-                </defs>
-                <rect width="512" height="512" rx="128" fill="url(#bgGradPreview)"/>
-                <rect width="508" height="508" x="2" y="2" rx="126" fill="none" stroke="rgba(255, 255, 255, 0.12)" stroke-width="4"/>
-                <path d="M128 384 L128 128 L192 128 L192 384 Z" fill="url(#crimsonGradPreview)"/>
-                <path d="M192 128 L320 384 L384 384 L256 128 Z" fill="url(#crimsonGradPreview)"/>
-                <path d="M320 384 L320 128 L384 128 L384 384 Z" fill="url(#crimsonGradPreview)"/>
-                <circle cx="384" cy="128" r="28" fill="url(#cyanGradPreview)"/>
-                <circle cx="384" cy="128" r="14" fill="#FFFFFF"/>
+                <rect width="512" height="512" rx="120" fill="#0E121A"/>
+                <rect x="2" y="2" width="508" height="508" rx="118" stroke="rgba(255,255,255,0.12)" stroke-width="4"/>
+                <circle cx="256" cy="256" r="160" fill="#1A2234" opacity="0.45"/>
+                <g opacity="0.35" stroke="#E50914" stroke-width="16" stroke-linecap="round">
+                  <path d="M96 400 L176 320"/><path d="M336 176 L416 96"/>
+                </g>
+                <g fill="#E50914">
+                  <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z"/>
+                  <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(90 256 256)"/>
+                  <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(180 256 256)"/>
+                  <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(270 256 256)"/>
+                </g>
+                <circle cx="256" cy="256" r="46" fill="#00D8F6" opacity="0.18"/>
+                <circle cx="256" cy="256" r="32" fill="#00D8F6"/>
+                <circle cx="256" cy="256" r="13" fill="#FFFFFF"/>
+                <circle cx="392" cy="120" r="26" fill="#00D8F6"/>
+                <circle cx="392" cy="120" r="12" fill="#FFFFFF"/>
               </svg>
               <div>
                 <div style="font-size:14px; font-weight:700; color:#fff;">Nakama Vector Emblem</div>
@@ -1242,11 +1254,16 @@
         <div class="footer-brand">
           <div style="display:flex; align-items:center; gap:10px;">
             <svg width="26" height="26" viewBox="0 0 512 512" fill="none">
-              <rect width="512" height="512" rx="120" fill="#141A24" stroke="rgba(255, 255, 255, 0.12)" stroke-width="8"/>
-              <path d="M128 384V128h64v256z" fill="#E50914"/>
-              <path d="M192 128l128 256h64L256 128z" fill="#E50914"/>
-              <path d="M320 384V128h64v256z" fill="#E50914"/>
-              <circle cx="384" cy="128" r="28" fill="#00D8F6"/>
+              <rect width="512" height="512" rx="120" fill="#0E121A"/>
+              <circle cx="256" cy="256" r="160" fill="#1A2234" opacity="0.45"/>
+              <g fill="#E50914">
+                <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z"/>
+                <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(90 256 256)"/>
+                <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(180 256 256)"/>
+                <path d="M256 96 C278 150 308 190 338 218 C298 230 270 254 256 286 C242 254 214 230 174 218 C204 190 234 150 256 96 Z" transform="rotate(270 256 256)"/>
+              </g>
+              <circle cx="256" cy="256" r="32" fill="#00D8F6"/>
+              <circle cx="256" cy="256" r="13" fill="#FFFFFF"/>
             </svg>
             <span style="font-size:14px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#fff;">Nakama Network</span>
           </div>
